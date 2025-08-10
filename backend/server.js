@@ -3,7 +3,6 @@ const express = require("express");
 const path = require("path");
 const cors = require("cors"); // Impor CORS
 const { sequelize, syncDatabase } = require("./src/models");
-
 // Memuat variabel lingkungan dari file .env
 dotenv.config();
 
@@ -13,7 +12,7 @@ const app = express();
 // --- KONFIGURASI CORS BARU ---
 // Daftar domain yang diizinkan untuk mengakses API ini
 const whitelist = [
-    "http://localhost:5173",
+    "http://localhost:5174",
     "https://skydance.life",
     "https://www.skydance.life",
 ];
@@ -51,6 +50,7 @@ const faqRoutes = require("./src/routes/faqRoutes");
 const pengaturanHalamanRoutes = require("./src/routes/pengaturanHalamanRoutes");
 const aboutRoutes = require("./src/routes/aboutRoutes");
 const sambutanRoutes = require("./src/routes/sambutanRoutes");
+const dashboardRoutes = require("./src/routes/dashboardRoutes");
 
 // --- Rute Dasar untuk Pengujian ---
 app.get("/", (req, res) => {
@@ -72,6 +72,7 @@ app.use("/api/faq", faqRoutes);
 app.use("/api/pengaturan-halaman", pengaturanHalamanRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/sambutan", sambutanRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Menentukan port dari file .env atau default ke 8000
 const PORT = process.env.PORT || 8000;
