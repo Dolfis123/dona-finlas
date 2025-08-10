@@ -36,7 +36,7 @@ app.use(cors(corsOptions));
 // Middleware untuk parsing body request sebagai JSON
 app.use(express.json());
 // Middleware untuk menyajikan file statis dari folder 'public'
-app.use(express.static(path.join(__dirname, "public")));
+app.use("/api", express.static(path.join(__dirname, "public")));
 
 // --- Impor Rute ---
 const authRoutes = require("./src/routes/authRoutes");
