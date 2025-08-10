@@ -100,7 +100,7 @@ const BeritaPage = () => {
                 className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col transform hover:-translate-y-2 transition-transform duration-300"
               >
                 <img
-                  src={`${backendUrl}/api/images/${berita.gambar_url}`}
+                  src={`${backendUrl}/images/${berita.gambar_url}`}
                   alt={berita.judul}
                   className="w-full h-56 object-cover"
                 />

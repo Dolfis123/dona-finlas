@@ -100,7 +100,7 @@ const StrukturOrganisasiPage = () => {
                 jabatan={lurah.jabatan}
                 foto={
                   lurah.foto_url
-                    ? `${backendUrl}/api/images/${lurah.foto_url}`
+                    ? `${backendUrl}/images/${lurah.foto_url}`
                     : undefined
                 }
               />
@@ -122,7 +122,7 @@ const StrukturOrganisasiPage = () => {
                 jabatan={sekretaris.jabatan}
                 foto={
                   sekretaris.foto_url
-                    ? `${backendUrl}/api/images/${sekretaris.foto_url}`
+                    ? `${backendUrl}/images/${sekretaris.foto_url}`
                     : undefined
                 }
               />
@@ -151,7 +151,7 @@ const StrukturOrganisasiPage = () => {
                     jabatan={kasi.jabatan}
                     foto={
                       kasi.foto_url
-                        ? `${backendUrl}/api/images/${kasi.foto_url}`
+                        ? `${backendUrl}/images/${kasi.foto_url}`
                         : undefined
                     }
                   />

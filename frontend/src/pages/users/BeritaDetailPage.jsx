@@ -69,7 +69,7 @@ const BeritaDetailPage = () => {
       <header className="relative h-[60vh] min-h-[400px] w-full">
         {/* Gambar Latar */}
         <img
-          src={`${backendUrl}/api/images/${berita.gambar_url}`}
+          src={`${backendUrl}/images/${berita.gambar_url}`}
           alt={berita.judul}
           className="absolute inset-0 w-full h-full object-cover"
         />
