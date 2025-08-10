@@ -1,5 +1,5 @@
-const express = require("express");
 const dotenv = require("dotenv");
+const express = require("express");
 const path = require("path");
 const cors = require("cors"); // Impor CORS
 const { sequelize, syncDatabase } = require("./src/models");
