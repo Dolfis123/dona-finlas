@@ -1,0 +1,20 @@
+PORT=3030
+JWT_SECRET=12345678
+DB_NAME=db_lurah_padarni
+DB_USER=root  # Ganti dengan user database MySQL-mu
+DB_PASS=       # Jika ada password, isi di sini
+DB_HOST=localhost
+DB_DIALECT=mysql
+
+
+
+.ENV PRODUCTION
+PORT=3030
+JWT_SECRET=12345678
+DB_NAME=db_lurah_padarni
+DB_USER=appsky  # Ganti dengan user database MySQL-mu
+DB_PASS=app123       # Jika ada password, isi di sini
+DB_HOST=127.0.0.1
+DB_DIALECT=mysql
+
+

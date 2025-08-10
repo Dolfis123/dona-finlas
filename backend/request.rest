@@ -1,0 +1,26 @@
+GET http://localhost:8000/api/berita
+
+###
+GET http://localhost:8000/api/pengumuman
+
+###
+http://localhost:8000/api/pejabat
+
+###
+GET http://localhost:8000/api/galeri
+
+###
+GET http://localhost:8000/api/agenda
+
+
+###
+GET http://localhost:8000/api/potensi-daerah
+
+###
+GET http://localhost:8000/api/faq
+
+###
+GET http://localhost:8000/api/sambutan
+
+###
+GET http://localhost:8000/api/pengaturan-halaman
