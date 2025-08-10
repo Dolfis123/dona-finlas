@@ -253,7 +253,7 @@ const HomePage = () => {
                 className="relative rounded-lg overflow-hidden h-80 group shadow-lg"
               >
                 <img
-                  src={`${backendUrl}/images/${item.gambar_url}`}
+                  src={`${backendUrl}/api/images/${item.gambar_url}`}
                   alt={item.nama_potensi}
                   className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
                 />

@@ -93,11 +93,13 @@ const GaleriPage = () => {
                 key={item.id}
                 className="group relative cursor-pointer overflow-hidden rounded-lg shadow-lg"
                 onClick={() =>
-                  setSelectedImage(`${backendUrl}/images/${item.gambar_url}`)
+                  setSelectedImage(
+                    `${backendUrl}/api/images/${item.gambar_url}`
+                  )
                 }
               >
                 <img
-                  src={`${backendUrl}/images/${item.gambar_url}`}
+                  src={`${backendUrl}/api/images/${item.gambar_url}`}
                   alt={item.deskripsi}
                   className="w-full h-64 object-cover transform transition-transform duration-300 group-hover:scale-110"
                 />

@@ -81,7 +81,7 @@ const AboutPage = () => {
               <img
                 src={
                   sambutanContent.foto_url
-                    ? `${backendUrl}/images/${sambutanContent.foto_url}`
+                    ? `${backendUrl}/api/images/${sambutanContent.foto_url}`
                     : "https://placehold.co/300x400/e2e8f0/334155?text=Foto+Lurah"
                 }
                 alt={sambutanContent.nama_lurah || "Kepala Kelurahan"}
