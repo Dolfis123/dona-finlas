@@ -45,7 +45,7 @@ const Navbar = () => {
   }, [isMobileMenuOpen]);
 
   const navLinks = [
-    { name: "Home", path: "/" },
+    { name: "Beranda", path: "/" },
     {
       name: "Profil",
       dropdown: [
@@ -70,7 +70,7 @@ const Navbar = () => {
         { name: "Download Dokumen", path: "/download" },
       ],
     },
-    { name: "FAQ", path: "/faq" },
+    { name: "Bantuan", path: "/faq" },
     { name: "Kontak", path: "/kontak" },
   ];
 
