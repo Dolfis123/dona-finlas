@@ -9,8 +9,8 @@ export default defineConfig({
         port: 5174,
         host: "0.0.0.0",
         allowedHosts: [
-            "pengadilannegerimanokwari.pro", // Hapus / di akhir
-            "www.pengadilannegerimanokwari.pro",
+            "kelurahanpadarni.blog", // Hapus / di akhir
+            "www.kelurahanpadarni.blog",
             "localhost:5000/api", // Hapus / di akhir
         ],
     },
