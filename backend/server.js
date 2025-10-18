@@ -2,8 +2,7 @@ const dotenv = require("dotenv");
 const express = require("express");
 const path = require("path");
 const cors = require("cors"); // Impor CORS
-const { sequelize, syncDatabase, User } = require("./src/models"); // <- TAMBAHKAN User DI SINI
-
+const { sequelize, syncDatabase } = require("./src/models");
 // Memuat variabel lingkungan dari file .env
 dotenv.config();
 
@@ -11,13 +10,16 @@ dotenv.config();
 const app = express();
 
 // --- KONFIGURASI CORS BARU ---
+// Daftar domain yang diizinkan untuk mengakses API ini
 const whitelist = [
     "http://localhost:5174",
+    "https://kelurahanpadarni.blog",
     "https://kelurahanpadarni.blog",
 ];
 
 const corsOptions = {
     origin: function(origin, callback) {
+        // Izinkan jika origin ada di dalam whitelist, atau jika origin tidak ada (seperti saat menggunakan Postman)
         if (whitelist.indexOf(origin) !== -1 || !origin) {
             callback(null, true);
         } else {
@@ -27,8 +29,12 @@ const corsOptions = {
 };
 
 // --- Middleware ---
+// Menggunakan konfigurasi CORS yang baru
 app.use(cors(corsOptions));
+
+// Middleware untuk parsing body request sebagai JSON
 app.use(express.json());
+// Middleware untuk menyajikan file statis dari folder 'public'
 app.use("/api", express.static(path.join(__dirname, "public")));
 
 // --- Impor Rute ---
@@ -71,34 +77,6 @@ app.use("/api/dashboard", dashboardRoutes);
 // Menentukan port dari file .env atau default ke 8000
 const PORT = process.env.PORT || 8000;
 
-
-// --- FUNGSI BARU UNTUK MEMBUAT ADMIN DEFAULT ---
-const createDefaultAdmin = async() => {
-    try {
-        // 1. Cek apakah user 'superadmin' sudah ada
-        const adminExists = await User.findOne({ where: { username: 'superadmin' } });
-
-        // 2. Jika tidak ada, buat user baru
-        if (!adminExists) {
-            console.log("User 'superadmin' tidak ditemukan, membuat user baru...");
-            await User.create({
-                username: 'dona',
-                // Password ini akan otomatis di-hash oleh hook di model Anda
-                password: 'dona_kadam',
-                nama_lengkap: 'Dona Kadam',
-                role: 'superadmin'
-            });
-            console.log("User 'superadmin' berhasil dibuat. Silakan login dan segera ganti password!");
-        } else {
-            // 3. Jika sudah ada, tidak melakukan apa-apa
-            console.log("User 'superadmin' sudah ada di database.");
-        }
-    } catch (error) {
-        console.error("Gagal membuat user admin default:", error);
-    }
-};
-
-
 // Fungsi untuk memulai server
 const startServer = async() => {
     try {
@@ -106,9 +84,6 @@ const startServer = async() => {
         console.log("Koneksi ke database MySQL berhasil.");
 
         await syncDatabase();
-
-        // Panggil fungsi untuk membuat admin default setelah sinkronisasi database
-        await createDefaultAdmin();
 
         app.listen(PORT, () => {
             console.log(`Server berjalan di http://localhost:${PORT}`);
