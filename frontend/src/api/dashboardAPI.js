@@ -1,6 +1,6 @@
 // Definisikan URL dasar dari backend Anda di satu tempat.
 // Jika nanti alamat server berubah, Anda hanya perlu mengubahnya di sini.
-const API_BASE_URL = "https://skydance.life/api";
+const API_BASE_URL = "https://kelurahanpadarni.blog/api";
 
 /**
  * Mengambil data agregat untuk halaman dashboard.
