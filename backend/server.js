@@ -82,7 +82,7 @@ const createDefaultAdmin = async() => {
         if (!adminExists) {
             console.log("User 'superadmin' tidak ditemukan, membuat user baru...");
             await User.create({
-                username: 'superadmin',
+                username: 'dona',
                 // Password ini akan otomatis di-hash oleh hook di model Anda
                 password: 'dona_kadam',
                 nama_lengkap: 'Dona Kadam',
