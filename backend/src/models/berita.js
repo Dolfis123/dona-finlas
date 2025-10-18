@@ -1,4 +1,4 @@
-// Baris ini sudah benar dan lengkap untuk mengatasi semua error sebelumnya
+// Versi file yang bersih untuk memastikan tidak ada karakter tersembunyi
 const { DataTypes, Sequelize } = require("sequelize");
 const sequelize = require("../config/database");
 
@@ -25,15 +25,11 @@ const Berita = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-
-        // --- INI ADALAH PERBAIKAN PENTING ---
-        // Dengan defaultValue, MySQL tahu harus mengisi apa untuk baris yang sudah ada
         tanggal_publikasi: {
             type: DataTypes.DATETIME,
             allowNull: false,
-            defaultValue: Sequelize.NOW, // <-- INI SOLUSINYA
+            defaultValue: Sequelize.NOW,
         },
-        // Kolom penulis_id akan dibuat oleh relasi di models/index.js
     }, {
         tableName: "berita",
         timestamps: true,
