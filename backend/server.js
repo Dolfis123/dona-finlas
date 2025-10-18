@@ -13,8 +13,8 @@ const app = express();
 // Daftar domain yang diizinkan untuk mengakses API ini
 const whitelist = [
     "http://localhost:5174",
-    "https://skydance.life",
-    "https://www.skydance.life",
+    "https://kelurahanpadarni.blog",
+    "https://kelurahanpadarni.blog",
 ];
 
 const corsOptions = {
