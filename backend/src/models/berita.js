@@ -1,5 +1,4 @@
-// Versi file yang bersih untuk memastikan tidak ada karakter tersembunyi
-const { DataTypes, Sequelize } = require("sequelize");
+const { DataTypes } = require("sequelize");
 const sequelize = require("../config/database");
 
 const Berita = sequelize.define(
@@ -25,14 +24,15 @@ const Berita = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        // --- KOLOM BARU DITAMBAHKAN DI SINI ---
         tanggal_publikasi: {
-            type: DataTypes.DATETIME,
+            type: DataTypes.DATE, // Menggunakan tipe data DATE atau TIMESTAMP
             allowNull: false,
-            defaultValue: Sequelize.NOW,
         },
+        // Kolom penulis_id akan dibuat oleh relasi di models/index.js
     }, {
         tableName: "berita",
-        timestamps: true,
+        timestamps: true, // Tetap gunakan ini untuk createdAt dan updatedAt
     }
 );
 
