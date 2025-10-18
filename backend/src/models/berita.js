@@ -26,9 +26,9 @@ const Berita = sequelize.define(
         },
         // --- KOLOM BARU DITAMBAHKAN DI SINI ---
         tanggal_publikasi: {
-            type: DataTypes.DATETIME,
-            allowNull: true // Ubah ini
-        }
+            type: DataTypes.DATE, // Menggunakan tipe data DATE atau TIMESTAMP
+            allowNull: false,
+        },
         // Kolom penulis_id akan dibuat oleh relasi di models/index.js
     }, {
         tableName: "berita",
