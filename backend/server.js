@@ -14,7 +14,7 @@ const app = express();
 const whitelist = [
     "http://localhost:5174",
     "https://kelurahanpadarni.blog",
-    "https://kelurahanpadarni.blog",
+    "https://www.kelurahanpadarni.blog",
 ];
 
 const corsOptions = {

@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  # 1. DATABASE SERVICE
+  padarni_db:
+    image: mysql:8.0
+    container_name: padarni_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: db_lurah_padarni
+      MYSQL_ROOT_PASSWORD: "K4r37dolfis." # Password Root (Sesuai .env Anda)
+    volumes:
+      - mysql_data_padarni:/var/lib/mysql
+    networks:
+      - padarni-network
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3308:3306" # Port Host beda (3308) biar gak bentrok
+
+  # 2. BACKEND SERVICE
+  padarni_api:
+    build: ./backend
+    container_name: padarni_api
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - NODE_ENV=production
+      # KONEKSI DATABASE (Penting: Host pakai nama service 'padarni_db')
+      - DB_HOST=padarni_db 
+      - DB_USER=root
+      - DB_PASSWORD=K4r37dolfis.
+      - DB_NAME=db_lurah_padarni
+      - DB_DIALECT=mysql
+      - JWT_SECRET=12345678
+    volumes:
+      - ./backend_uploads:/app/public # Mapping folder public agar file tidak hilang
+    depends_on:
+      - padarni_db
+    networks:
+      - padarni-network
+
+  # 3. FRONTEND SERVICE
+  padarni_web:
+    build:
+      context: ./frontend
+      args:
+        # URL Backend sesuai domain asli
+        VITE_API_BASE_URL: "https://kelurahanpadarni.blog/api"
+        VITE_BACKEND_URL: "https://kelurahanpadarni.blog/api"
+    container_name: padarni_web
+    restart: always
+    ports:
+      - "3002:80" # Port Host 3002
+    depends_on:
+      - padarni_api
+    networks:
+      - padarni-network
+
+networks:
+  padarni-network:
+    driver: bridge
+
+volumes:
+  mysql_data_padarni:
