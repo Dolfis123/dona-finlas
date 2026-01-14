@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Times New Roman', serif; margin: 40px 50px; font-size: 12pt; }
+        .kop-surat { text-align: center; font-weight: bold; margin-bottom: 5px; line-height: 1.3; }
+        .garis-kop { border-bottom: 3px double black; margin-bottom: 20px; }
+        .judul { text-align: center; text-transform: uppercase; text-decoration: underline; font-weight: bold; margin: 0; }
+        .nomor { text-align: center; margin-top: 2px; margin-bottom: 20px; }
+        
+        .pembuka { text-align: justify; margin-bottom: 10px; }
+        
+        /* Tabel Data agar titik dua sejajar */
+        .tabel-data { width: 100%; margin-left: 20px; margin-bottom: 10px; }
+        .tabel-data td { vertical-align: top; padding: 2px 0; }
+        .label { width: 200px; }
+        .titik { width: 20px; text-align: center; }
+        .isi { font-weight: bold; text-transform: uppercase; }
+
+        .separator { margin: 15px 0 5px 0; font-weight: bold; }
+        .penutup { text-align: justify; margin-top: 20px; line-height: 1.5; }
+
+        .ttd-container { float: right; width: 300px; text-align: center; margin-top: 30px; }
+        .ttd-nama { font-weight: bold; text-decoration: underline; margin-top: 70px; }
+    </style>
+</head>
+<body>
+    <div class="kop-surat">
+        PEMERINTAH KABUPATEN MANOKWARI<br>
+        DISTRIK MANOKWARI BARAT<br>
+        KELURAHAN PADARNI<br> <span style="font-weight: normal; font-size: 11pt;">Jl. Merdeka No. 123 Manokwari Kode Pos: 98314</span>
+    </div>
+    <div class="garis-kop"></div>
+
+    <h3 class="judul">SURAT KETERANGAN TIDAK MAMPU</h3>
+    <p class="nomor">Nomor: 422.5 / {{no_surat}} / {{tahun}}</p>
+
+    <p class="pembuka">
+        Yang bertanda tangan dibawah ini, Kepala Kelurahan Padarni Distrik Manokwari Barat Menerangkan bahwa :
+    </p>
+
+    <table class="tabel-data">
+        <tr><td class="label">NAMA</td><td class="titik">:</td><td class="isi">{{nama_ortu}}</td></tr>
+        <tr><td class="label">TEMPAT TANGGAL LAHIR</td><td class="titik">:</td><td class="isi">{{ttl_ortu}}</td></tr>
+        <tr><td class="label">JENIS KELAMIN</td><td class="titik">:</td><td class="isi">{{jk_ortu}}</td></tr>
+        <tr><td class="label">UMUR</td><td class="titik">:</td><td class="isi">{{umur_ortu}} Tahun</td></tr>
+        <tr><td class="label">PEKERJAAN</td><td class="titik">:</td><td class="isi">{{pekerjaan_ortu}}</td></tr>
+        <tr><td class="label">PENGHASILAN</td><td class="titik">:</td><td class="isi">Rp {{penghasilan_ortu}}</td></tr>
+        <tr><td class="label">ALAMAT</td><td class="titik">:</td><td class="isi">{{alamat}}</td></tr>
+    </table>
+
+    <div class="separator">Orang Tua dari:</div>
+
+    <table class="tabel-data">
+        <tr><td class="label">NAMA</td><td class="titik">:</td><td class="isi">{{nama_mhs}}</td></tr>
+        <tr><td class="label">NIM</td><td class="titik">:</td><td class="isi">{{nim_mhs}}</td></tr>
+        <tr><td class="label">FAKULTAS</td><td class="titik">:</td><td class="isi">{{fakultas}}</td></tr>
+        <tr><td class="label">PROGRAM STUDI</td><td class="titik">:</td><td class="isi">{{prodi}}</td></tr>
+    </table>
+
+    <div class="penutup">
+        Pada: <b>"UNIVERSITAS PAPUA"</b> yang keadaan ekonominya lemah. Dikarenakan <b>Orang Tua Tidak Mampu.</b><br>
+        Untuk Pengurusan: <b>{{keperluan}}</b>
+    </div>
+
+    <p>Demikian surat keterangan ini, dan tidak dipergunakan untuk kepentingan lainnya.</p>
+
+    <div class="ttd-container">
+        Manokwari, {{tgl_surat_format}}<br>
+        AN. LURAH PADARNI<br>
+        DISTRIK MANOKWARI BARAT<br>
+        {{jabatan_pejabat}}<br> <div class="ttd-nama">{{nama_pejabat}}</div>
+        <div>NIP. {{nip_pejabat}}</div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: 'Times New Roman', serif; margin: 40px 50px; font-size: 12pt; }
+        .kop-surat { text-align: center; font-weight: bold; line-height: 1.3; }
+        .garis-kop { border-bottom: 3px double black; margin-bottom: 20px; margin-top: 5px; }
+        .judul { text-align: center; text-transform: uppercase; text-decoration: underline; font-weight: bold; margin: 0; }
+        .nomor { text-align: center; margin-top: 2px; margin-bottom: 20px; }
+        
+        .tabel-data { width: 100%; margin-left: 20px; margin-bottom: 10px; }
+        .tabel-data td { vertical-align: top; padding: 3px 0; }
+        .label { width: 180px; }
+        .titik { width: 20px; text-align: center; }
+        .isi { font-weight: bold; text-transform: uppercase; }
+
+        .penutup { text-align: justify; margin-top: 20px; line-height: 1.5; }
+        .ttd-container { float: right; width: 300px; text-align: center; margin-top: 30px; }
+        .ttd-nama { font-weight: bold; text-decoration: underline; margin-top: 70px; }
+    </style>
+</head>
+<body>
+    <div class="kop-surat">
+        PEMERINTAH KABUPATEN MANOKWARI<br>
+        DISTRIK MANOKWARI BARAT<br>
+        KELURAHAN PADARNI<br>
+        <span style="font-weight: normal; font-size: 11pt;">Jl. Merdeka No. 123 Manokwari Kode Pos: 98314</span>
+    </div>
+    <div class="garis-kop"></div>
+
+    <h3 class="judul">SURAT KETERANGAN BERDOMISILI</h3>
+    <p class="nomor">NOMOR: 471.1 / {{no_surat}} / {{tahun}}</p>
+
+    <p>Yang bertandatangan di bawah ini Kepala Kelurahan Padarni Distrik Manokwari Barat menerangkan bahwa :</p>
+
+    <table class="tabel-data">
+        <tr><td class="label">Nama lengkap</td><td class="titik">:</td><td class="isi">{{nama_lengkap}}</td></tr>
+        <tr><td class="label">Tempat/Tggl Lahir</td><td class="titik">:</td><td class="isi">{{ttl}}</td></tr>
+        <tr><td class="label">Jenis kelamin</td><td class="titik">:</td><td class="isi">{{jk}}</td></tr>
+        <tr><td class="label">Agama</td><td class="titik">:</td><td class="isi">{{agama}}</td></tr>
+        <tr><td class="label">Pekerjaan</td><td class="titik">:</td><td class="isi">{{pekerjaan}}</td></tr>
+        <tr><td class="label">Alamat</td><td class="titik">:</td><td class="isi">{{alamat}}</td></tr>
+        <tr><td class="label">RT/RW</td><td class="titik">:</td><td class="isi">{{rt_rw}}</td></tr>
+        <tr><td class="label">No. KTP</td><td class="titik">:</td><td class="isi">{{nik}}</td></tr>
+    </table>
+
+    <div class="penutup">
+        Yang bersangkutan benar-benar, Berdomisili di Kelurahan Padarni Distrik Manokwari Barat, Kabupaten Manokwari Provinsi Papua Barat.<br>
+        Untuk Kepengurusan: <b>{{keperluan}}</b>
+    </div>
+
+    <p>Demikian Surat Keterangan ini diberikan kepada yang bersangkutan agar dapat dipergunakan sebagaimana mestinya.</p>
+
+    <div class="ttd-container">
+        Manokwari, {{tgl_surat_format}}<br>
+        AN. KEPALA KELURAHAN PADARNI<br>
+        DISTRIK MANOKWARI BARAT<br>
+        {{jabatan_pejabat}}<br> <div class="ttd-nama">{{nama_pejabat}}</div>
+        <div>NIP. {{nip_pejabat}}</div>
+    </div>
+</body>
+</html>

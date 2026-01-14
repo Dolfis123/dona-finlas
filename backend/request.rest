@@ -24,3 +24,60 @@ GET http://localhost:8000/api/sambutan
 
 ###
 GET http://localhost:8000/api/pengaturan-halaman
+
+###
+POST http://localhost:8000/api/surat/master/jenis
+Content-Type: application/json
+
+{
+    "kode_surat": "SKOAP",
+    "nama_surat": "Surat Keterangan Orang Asli Papua"
+}
+
+#Contoh 2: Warga Mengajukan Surat (Public)
+###
+POST http://localhost:8000/api/surat/ajukan
+Content-Type: application/json
+
+{
+    "id_jenis": 1,
+    "nik": "92010123456789",
+    "nama_lengkap": "Mace Papua",
+    "no_hp": "08123456789",
+    "data_form_json": {
+        "pekerjaan_ortu": "Petani",
+        "penghasilan_ortu": 1000000,
+        "kampus": "UNIPA"
+    },
+    "data_berkas_json": {
+        "ktp": "foto_ktp_mace.jpg",
+        "kk": "foto_kk.jpg"
+    }
+}
+
+#Cara Menguji (Testing Flow Lengkap)
+###
+POST http://localhost:8000/api/surat/finalize
+Content-Type: application/json
+
+{
+    "id_pengajuan": 1,  
+    "no_surat_manual": "470 / 001 / Kel-PDN / 2026",
+    "id_pegawai_ttd": 1, 
+    "tgl_surat": "2026-01-12"
+}
+
+#Tambah Data Pegawai (Pak Lurah)
+###
+POST http://localhost:8000/api/surat/master/pegawai
+Content-Type: application/json
+
+{
+    "nip": "198001012005011001",
+    "nama_lengkap": "Drs. Budi Santoso",
+    "jabatan": "Lurah"
+}
+
+#Cek ID Pegawai (Opsional)
+###
+GET http://localhost:8000/api/surat/master/pegawai

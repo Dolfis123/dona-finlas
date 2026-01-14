@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Surat Keterangan Tidak Mampu - Kelurahan Amban</title>
+    <style>
+        /* Mengatur ukuran kertas A4 dan margin */
+        @page {
+            size: A4;
+            margin: 2.5cm 2cm 2cm 2cm; /* Atas Kanan Bawah Kiri */
+        }
+
+        body {
+            font-family: "Times New Roman", Times, serif;
+            font-size: 12pt;
+            line-height: 1.5;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 0; /* Padding diatur oleh @page saat print/pdf */
+        }
+
+        /* --- STYLE KOP SURAT --- */
+        .kop-header {
+            text-align: center;
+            position: relative;
+            margin-bottom: 5px;
+            /* Pastikan lebar container kop full */
+            width: 100%; 
+        }
+
+        /* Tempat Logo */
+        .logo-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 80px; /* Sesuaikan ukuran logo */
+            height: auto;
+        }
+
+        .logo-container img {
+            width: 100%;
+        }
+
+        /* Teks Kop */
+        .kop-text {
+            margin-left: 0px; /* Jika logo besar, ini bisa ditambah */
+        }
+
+        .kop-text h3, .kop-text h2, .kop-text p {
+            margin: 0;
+            padding: 0;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .kop-text h3 { font-size: 14pt; } /* PEMERINTAH KAB */
+        .kop-text h2 { font-size: 16pt; } /* KELURAHAN */
+        .kop-text p { 
+            font-size: 11pt; 
+            font-weight: normal; 
+            text-transform: none; 
+            font-style: italic;
+        }
+
+        /* Garis Bawah Kop */
+        .garis-kop {
+            border-top: 3px solid #000;
+            border-bottom: 1px solid #000;
+            height: 3px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* --- STYLE JUDUL & NOMOR --- */
+        .judul-surat {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .judul-surat h4 {
+            margin: 0;
+            text-decoration: underline;
+            font-size: 14pt;
+            font-weight: bold;
+        }
+
+        .judul-surat p {
+            margin: 0;
+            font-size: 12pt;
+        }
+
+        /* --- STYLE TABEL DATA (Supaya Titik Dua Lurus) --- */
+        .table-data {
+            width: 100%;
+            border-collapse: collapse;
+            margin-left: 20px; /* Indentasi sedikit */
+        }
+
+        .table-data td {
+            vertical-align: top; /* Supaya kalau teks panjang, tetap rapi di atas */
+            padding-bottom: 5px;
+        }
+
+        .label { width: 35%; } /* Lebar kolom kiri */
+        .separator { width: 2%; text-align: center; } /* Lebar kolom titik dua */
+        .value { width: 63%; font-weight: bold; } /* Lebar isi data */
+
+        /* --- STYLE TANDA TANGAN --- */
+        .tanda-tangan-container {
+            margin-top: 50px;
+            display: table; /* Trik agar bisa float dengan rapi di PDF */
+            width: 100%;
+        }
+
+        .ttd-box {
+            float: right; /* Geser ke kanan */
+            width: 45%; /* Lebar area tanda tangan */
+            text-align: center;
+        }
+
+        .ttd-nama {
+            margin-top: 70px; /* Jarak untuk tanda tangan basah */
+            font-weight: bold;
+            text-decoration: underline;
+        }
+
+        /* Helper margin */
+        .mt-2 { margin-top: 10px; }
+        .mb-2 { margin-bottom: 10px; }
+        .indent { text-indent: 30px; }
+
+    </style>
+</head>
+<body>
+
+    <div class="kop-header">
+        <div class="kop-text">
+            <h3>PEMERINTAH KABUPATEN MANOKWARI</h3>
+            <h3>DISTRIK MANOKWARI BARAT</h3>
+            <h2>KELURAHAN AMBAN</h2>
+            <p>JL. Gunung Salju, Amban. Kode Pos: 98314</p>
+        </div>
+    </div>
+    <div class="garis-kop"></div>
+
+    <div class="judul-surat">
+        <h4>SURAT KETERANGAN TIDAK MAMPU</h4>
+        <p>Nomor: 422.5 / &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; / 2026</p>
+    </div>
+
+    <p>Yang bertanda tangan dibawah ini, Kepala Kelurahan Amban, Distrik Manokwari Barat Menerangkan bahwa:</p>
+
+    <table class="table-data">
+        <tr>
+            <td class="label">NAMA</td>
+            <td class="separator">:</td>
+            <td class="value">ALEX SIBI</td>
+        </tr>
+        <tr>
+            <td class="label">TEMPAT, TANGGAL LAHIR</td>
+            <td class="separator">:</td>
+            <td class="value">13 Desember 1974</td>
+        </tr>
+        <tr>
+            <td class="label">JENIS KELAMIN</td>
+            <td class="separator">:</td>
+            <td class="value">Laki - Laki</td>
+        </tr>
+        <tr>
+            <td class="label">UMUR</td>
+            <td class="separator">:</td>
+            <td class="value">49 Tahun</td>
+        </tr>
+        <tr>
+            <td class="label">PEKERJAAN</td>
+            <td class="separator">:</td>
+            <td class="value">PNS</td>
+        </tr>
+        <tr>
+            <td class="label">PENGHASILAN</td>
+            <td class="separator">:</td>
+            <td class="value">Rp 3.500.000,-</td>
+        </tr>
+        <tr>
+            <td class="label">ALAMAT</td>
+            <td class="separator">:</td>
+            <td class="value">Litbang Anggori</td>
+        </tr>
+    </table>
+
+    <p class="mt-2 mb-2">Orang Tua dari:</p>
+
+    <table class="table-data">
+        <tr>
+            <td class="label">NAMA</td>
+            <td class="separator">:</td>
+            <td class="value">JOVANZKA Y.A. SIBI</td>
+        </tr>
+        <tr>
+            <td class="label">NIM</td>
+            <td class="separator">:</td>
+            <td class="value">202151009</td>
+        </tr>
+        <tr>
+            <td class="label">FAKULTAS</td>
+            <td class="separator">:</td>
+            <td class="value">Sastra dan Budaya</td>
+        </tr>
+        <tr>
+            <td class="label">PROGRAM STUDI</td>
+            <td class="separator">:</td>
+            <td class="value">Sastra Inggris</td>
+        </tr>
+        <tr>
+            <td class="label">PADA</td>
+            <td class="separator">:</td>
+            <td class="value">UNIVERSITAS PAPUA</td>
+        </tr>
+    </table>
+
+    <p class="indent mt-2">
+        Keadaan ekonominya lemah dikarenakan <b>Orang Tua Tidak Mampu</b>. Surat ini dibuat untuk pengurusan: <b>Melengkapi Berkas</b>.
+    </p>
+
+    <p class="indent">
+        Demikian surat keterangan ini dibuat, untuk dipergunakan sebagaimana mestinya.
+    </p>
+
+    <div class="tanda-tangan-container">
+        <div class="ttd-box">
+            <p>Manokwari, 21 Desember 2026</p>
+            <p>AN. LURAH AMBAN</p>
+            <p>KASI PEMERINTAHAN</p>
+            
+            <div class="ttd-nama">FREDIK C. AWOM</div>
+            <p>NIP. 19690411 200701 1033</p>
+        </div>
+    </div>
+
+</body>
+</html>

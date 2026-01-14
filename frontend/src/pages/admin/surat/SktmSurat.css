@@ -1,0 +1,149 @@
+/* SktmSurat.css */
+
+/* --- 1. RESET DASAR --- */
+* { 
+    box-sizing: border-box; 
+    -webkit-print-color-adjust: exact; 
+}
+
+/* --- 2. TAMPILAN LAYAR MONITOR (PREVIEW) --- */
+/* Wrapper luar untuk membuat efek latar belakang abu-abu & posisi tengah */
+.container-surat {
+    background-color: #555;
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+/* SETTING KERTAS A4 */
+.page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm 25mm 20mm 25mm; 
+    background: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    position: relative;
+    font-family: "Times New Roman", Times, serif;
+    color: black;
+    margin-bottom: 20px; /* Jarak bawah saat di scroll */
+}
+
+/* --- 3. STYLE KOP SURAT --- */
+.header-container {
+    width: 100%;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.header-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-height: 100px;
+}
+
+.logo-box {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 70px;
+    height: auto;
+}
+.logo-box img { width: 100%; height: auto; }
+
+.text-header {
+    text-align: center;
+    width: 100%;
+    padding-left: 80px;
+    padding-right: 80px;
+}
+
+.text-header h3 { font-size: 14pt; font-weight: normal; margin: 0; text-transform: uppercase; }
+.text-header h2 { font-size: 15pt; font-weight: bold; margin: 0; margin-top: 2px; text-transform: uppercase; }
+.text-header h1 { font-size: 18pt; font-weight: 900; margin: 0; margin-top: 5px; text-transform: uppercase; }
+
+.alamat-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    margin-top: 5px;
+    margin-bottom: 2px;
+    font-size: 11pt;
+    font-weight: bold; 
+    border-bottom: 4px solid #000; /* Garis Tebal Gabung disini agar rapi */
+    padding-bottom: 2px;
+}
+
+.garis-kop {
+    /* Opsional jika ingin garis ganda terpisah */
+    border-top: 1px solid #000; 
+    margin-top: 1px;
+    width: 100%;
+}
+
+/* --- 4. ISI SURAT --- */
+.judul-container { text-align: center; margin: 20px 0; }
+.judul-surat { font-size: 14pt; font-weight: bold; text-decoration: underline; }
+.nomor-surat { font-size: 12pt; margin-top: 5px; }
+
+.content { font-size: 12pt; line-height: 1.5; text-align: justify; }
+
+.data-table { width: 100%; margin-left: 0; border-collapse: collapse; margin-bottom: 15px; }
+.data-table td { vertical-align: top; padding: 2px 0; }
+
+.col-label { width: 220px; } /* Lebar label diperbesar sedikit agar TTL tidak turun */
+.col-sep { width: 20px; text-align: center; }
+.col-val { font-weight: bold; text-transform: uppercase;}
+
+.ttd-container { display: flex; justify-content: flex-end; margin-top: 30px; }
+.ttd-box { width: 300px; text-align: center; }
+.ttd-nama { text-decoration: underline; font-weight: bold; margin-top: 80px; }
+
+
+/* --- 5. PENGATURAN CETAK (PRINT) --- */
+/* Ini bagian paling penting agar background abu-abu hilang saat print */
+/* --- 5. PENGATURAN CETAK (PRINT) FINAL --- */
+@media print {
+    /* Sembunyikan elemen UI (Tombol Cetak/Unduh, Scrollbar, dll) */
+    .no-print, .no-print * {
+        display: none !important;
+    }
+
+    /* Paksa background putih bersih */
+    body, html, #root, .container-surat {
+        background-color: white !important;
+        background: white !important;
+        width: 100%;
+        height: 100%;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important; /* Hilangkan scrollbar saat print */
+    }
+
+    /* Setting Halaman Kertas */
+    .page {
+        position: relative;
+        width: 100%;
+        height: auto;
+        left: 0;
+        top: 0;
+        margin: 0;
+        border: none;
+        box-shadow: none;
+        
+        /* PENTING: Karena margin browser kita nol-kan (di bawah), 
+           kita harus kasih padding di sini agar teks surat tidak mepet pinggir kertas */
+        padding: 15mm 25mm 20mm 25mm !important; 
+    }
+
+    /* --- BAGIAN INI YANG MENGHILANGKAN TANGGAL & JUDUL HALAMAN --- */
+    @page {
+        size: A4 portrait;
+        margin: 0; /* Margin 0 membuang Header/Footer bawaan browser */
+    }
+}

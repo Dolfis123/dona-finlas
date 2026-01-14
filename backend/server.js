@@ -51,7 +51,7 @@ const pengaturanHalamanRoutes = require("./src/routes/pengaturanHalamanRoutes");
 const aboutRoutes = require("./src/routes/aboutRoutes");
 const sambutanRoutes = require("./src/routes/sambutanRoutes");
 const dashboardRoutes = require("./src/routes/dashboardRoutes");
-
+const suratRoutes = require("./src/routes/suratRoutes");
 // --- Rute Dasar untuk Pengujian ---
 app.get("/", (req, res) => {
     res.status(200).json({
@@ -73,7 +73,7 @@ app.use("/api/pengaturan-halaman", pengaturanHalamanRoutes);
 app.use("/api/about", aboutRoutes);
 app.use("/api/sambutan", sambutanRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-
+app.use("/api/surat", suratRoutes);
 // Menentukan port dari file .env atau default ke 8000
 const PORT = process.env.PORT || 8000;
 

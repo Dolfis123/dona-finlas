@@ -16,6 +16,10 @@ const AdminLayout = () => {
   const getPageTitle = () => {
     const path = location.pathname;
     if (path.includes("/dashboard")) return "Dashboard";
+    if (path.includes("/sktm")) return "Surat Keterangan Tidak Mampu (SKTM)";
+    if (path.includes("/validasi-surat")) return "Validasi Surat Online";
+    if (path.includes("/validasi-surat/:id")) return "Detail Validasi Surat";
+    if (path.includes("/arsip-surat")) return "Arsip Surat";
     if (path.includes("/berita")) return "Manajemen Berita";
     if (path.includes("/pengumuman")) return "Manajemen Pengumuman";
     if (path.includes("/galeri")) return "Manajemen Galeri";
@@ -25,6 +29,9 @@ const AdminLayout = () => {
     if (path.includes("/dokumen")) return "Download Dokumen";
     if (path.includes("/faq")) return "Manajemen FAQ";
     if (path.includes("/pengaturan-halaman")) return "Pengaturan Tampilan";
+    if (path.includes("/sambutan")) return "Kata Sambutan";
+    if (path.includes("/about")) return "Tentang Kelurahan";
+    if (path.includes("/layanan")) return "Kelola Layanan";
     return "Admin Panel";
   };
 
