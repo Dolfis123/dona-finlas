@@ -1,37 +1,34 @@
+
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, Edit, Trash2, AlertCircle, CheckCircle } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, List, X, Save } from 'lucide-react';
 
 const JenisSuratAdmin = () => {
-    // --- STATE MANAGEMENT ---
+    // --- STATE UTAMA ---
     const [jenisSuratList, setJenisSuratList] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     
-    // Modal & Form State
+    // --- STATE MODAL UTAMA (JENIS SURAT) ---
     const [showModal, setShowModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        id: '',
-        kode_surat: '',
-        nama_surat: '',
-        status_aktif: 'Y'
-    });
+    const [formData, setFormData] = useState({ id: '', kode_surat: '', nama_surat: '', status_aktif: 'Y' });
 
-    // URL API (Sesuaikan dengan route backend Anda)
-    // Asumsi: Anda meletakkan routes surat di /api/surat/jenis
-    const API_URL = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
+    // --- STATE MODAL SYARAT (Persyaratan Dokumen) ---
+    const [showSyaratModal, setShowSyaratModal] = useState(false);
+    const [selectedSurat, setSelectedSurat] = useState(null); // Surat yang sedang diedit syaratnya
+    const [newSyarat, setNewSyarat] = useState({ nama_dokumen: '', wajib: 'Y' });
 
-    // --- 1. FETCH DATA (READ) ---
+    // URL API
+const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
+
+    // --- 1. FETCH DATA UTAMA ---
     const fetchJenisSurat = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(API_URL);
+            const response = await fetch(`${API_BASE}/jenis`);
             const data = await response.json();
-            
-            console.log("Data Jenis Surat:", data); // Debugging
             setJenisSuratList(Array.isArray(data) ? data : []);
         } catch (error) {
-            console.error("Error fetching data:", error);
-            alert("Gagal mengambil data jenis surat.");
+            console.error("Error:", error);
         }
         setIsLoading(false);
     };
@@ -40,76 +37,105 @@ const JenisSuratAdmin = () => {
         fetchJenisSurat();
     }, []);
 
-    // --- 2. HANDLERS ---
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
-    };
-
+    // --- 2. HANDLERS JENIS SURAT (CRUD UTAMA) ---
     const handleOpenModal = (item = null) => {
         if (item) {
-            // Mode Edit
             setIsEditing(true);
-            setFormData({
-                id: item.id,
-                kode_surat: item.kode_surat,
-                nama_surat: item.nama_surat,
-                status_aktif: item.status_aktif || 'Y'
-            });
+            setFormData({ id: item.id, kode_surat: item.kode_surat, nama_surat: item.nama_surat, status_aktif: item.status_aktif || 'Y' });
         } else {
-            // Mode Tambah
             setIsEditing(false);
             setFormData({ id: '', kode_surat: '', nama_surat: '', status_aktif: 'Y' });
         }
         setShowModal(true);
     };
 
-    // --- 3. SUBMIT (CREATE / UPDATE) ---
-    const handleSubmit = async (e) => {
+    const handleMainSubmit = async (e) => {
         e.preventDefault();
-        
-        // Tentukan URL dan Method
-        // Jika backend Anda pakai params ID: /api/surat/jenis/:id
-        const url = isEditing ? `${API_URL}/${formData.id}` : API_URL;
+        const url = isEditing ? `${API_BASE}/jenis/${formData.id}` : `${API_BASE}/jenis`;
         const method = isEditing ? 'PUT' : 'POST';
 
         try {
-            const response = await fetch(url, {
+            await fetch(url, {
                 method: method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
-
-            const result = await response.json();
-
-            if (response.ok) {
-                alert(isEditing ? "Jenis Surat berhasil diperbarui!" : "Jenis Surat berhasil dibuat!");
-                fetchJenisSurat(); // Refresh Tabel
-                setShowModal(false);
-            } else {
-                console.error("Error Backend:", result);
-                alert("Gagal: " + (result.message || "Terjadi kesalahan"));
-            }
+            fetchJenisSurat();
+            setShowModal(false);
         } catch (error) {
-            console.error(error);
-            alert("Error koneksi ke server.");
+            alert("Gagal menyimpan data.");
         }
     };
 
-    // --- 4. DELETE ---
     const handleDelete = async (id) => {
-        if (window.confirm("Yakin ingin menghapus jenis surat ini? Data syarat terkait mungkin juga akan hilang.")) {
-            try {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    alert("Berhasil dihapus.");
-                    fetchJenisSurat();
-                } else {
-                    alert("Gagal menghapus.");
-                }
-            } catch (error) {
-                console.error(error);
+        if (window.confirm("Hapus jenis surat ini?")) {
+            await fetch(`${API_BASE}/jenis/${id}`, { method: 'DELETE' });
+            fetchJenisSurat();
+        }
+    };
+
+    // --- 3. HANDLERS SYARAT (SUB-DATA) ---
+    
+    // Buka Modal Kelola Syarat
+    const openSyaratModal = (surat) => {
+        setSelectedSurat(surat); // Simpan surat yang dipilih ke state
+        setNewSyarat({ nama_dokumen: '', wajib: 'Y' }); // Reset form input syarat
+        setShowSyaratModal(true);
+    };
+
+    // Tambah Syarat Baru
+    const handleAddSyarat = async (e) => {
+        e.preventDefault();
+        if(!newSyarat.nama_dokumen) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/syarat`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    id_jenis: selectedSurat.id, // ID Surat yg sedang dibuka
+                    nama_dokumen: newSyarat.nama_dokumen,
+                    wajib: newSyarat.wajib
+                })
+            });
+
+            if (response.ok) {
+                // Refresh data agar syarat baru muncul
+                await fetchJenisSurat(); 
+                
+                // Update tampilan modal secara manual agar langsung terlihat tanpa tutup modal
+                // Kita cari data surat terbaru dari server, lalu update selectedSurat
+                const resBaru = await fetch(`${API_BASE}/jenis`);
+                const dataBaru = await resBaru.json();
+                const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
+                setSelectedSurat(suratTerupdate);
+                
+                // Reset input
+                setNewSyarat({ nama_dokumen: '', wajib: 'Y' });
             }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    // Hapus Syarat
+    const handleDeleteSyarat = async (id_syarat) => {
+        if(!window.confirm("Hapus syarat ini?")) return;
+
+        try {
+            const response = await fetch(`${API_BASE}/syarat/${id_syarat}`, { method: 'DELETE' });
+            if (response.ok) {
+                // Refresh data
+                await fetchJenisSurat();
+                
+                // Update tampilan modal
+                const resBaru = await fetch(`${API_BASE}/jenis`);
+                const dataBaru = await resBaru.json();
+                const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
+                setSelectedSurat(suratTerupdate);
+            }
+        } catch (error) {
+            alert("Gagal menghapus syarat.");
         }
     };
 
@@ -121,177 +147,175 @@ const JenisSuratAdmin = () => {
                 <div className="flex flex-col md:flex-row justify-between items-center mb-6">
                     <div>
                         <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
-                            <FileText className="text-blue-600" />
-                            Master Jenis Surat
+                            <FileText className="text-blue-600" /> Master Jenis Surat
                         </h1>
-                        <p className="text-gray-500 mt-1">Kelola template surat yang tersedia di kelurahan</p>
+                        <p className="text-gray-500 mt-1">Kelola template & syarat dokumen surat</p>
                     </div>
-                    <button 
-                        onClick={() => handleOpenModal()}
-                        className="mt-4 md:mt-0 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition duration-300 flex items-center gap-2"
-                    >
-                        <Plus size={20} />
-                        Buat Jenis Baru
+                    <button onClick={() => handleOpenModal()} className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-6 rounded-lg flex items-center gap-2 shadow-md">
+                        <Plus size={20} /> Buat Jenis Baru
                     </button>
                 </div>
 
-                {/* Tabel */}
+                {/* Tabel Data */}
                 <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-100">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-100 text-gray-600 uppercase text-sm leading-normal">
-                                <tr>
-                                    <th className="py-4 px-6 font-semibold w-16">No</th>
-                                    <th className="py-4 px-6 font-semibold w-32">Kode</th>
-                                    <th className="py-4 px-6 font-semibold">Nama Surat</th>
-                                    <th className="py-4 px-6 font-semibold">Syarat Dokumen</th>
-                                    <th className="py-4 px-6 font-semibold text-center w-32">Status</th>
-                                    <th className="py-4 px-6 font-semibold text-center w-40">Aksi</th>
+                    <table className="w-full text-left border-collapse">
+                        <thead className="bg-gray-100 text-gray-600 uppercase text-sm">
+                            <tr>
+                                <th className="py-4 px-6 w-16">No</th>
+                                <th className="py-4 px-6">Kode</th>
+                                <th className="py-4 px-6">Nama Surat</th>
+                                <th className="py-4 px-6">Syarat Dokumen</th>
+                                <th className="py-4 px-6 text-center">Status</th>
+                                <th className="py-4 px-6 text-center">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-gray-600 text-sm">
+                            {isLoading ? (
+                                <tr><td colSpan="6" className="py-8 text-center">Memuat...</td></tr>
+                            ) : jenisSuratList.map((item, index) => (
+                                <tr key={item.id} className="border-b hover:bg-gray-50">
+                                    <td className="py-4 px-6">{index + 1}</td>
+                                    <td className="py-4 px-6 font-mono font-bold text-blue-600">{item.kode_surat}</td>
+                                    <td className="py-4 px-6 font-medium text-gray-800">{item.nama_surat}</td>
+                                    <td className="py-4 px-6">
+                                        {/* Tampilan Syarat Mini */}
+                                        {item.syarat && item.syarat.length > 0 ? (
+                                            <div className="flex flex-wrap gap-1">
+                                                {item.syarat.map((s, idx) => (
+                                                    <span key={idx} className="bg-gray-100 border px-2 py-1 rounded text-xs">
+                                                        {s.nama_dokumen} {s.wajib === 'Y' && <span className="text-red-500">*</span>}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <span className="text-gray-400 text-xs italic">Belum ada syarat</span>
+                                        )}
+                                    </td>
+                                    <td className="py-4 px-6 text-center">
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold ${item.status_aktif === 'Y' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                            {item.status_aktif === 'Y' ? 'Aktif' : 'Non-Aktif'}
+                                        </span>
+                                    </td>
+                                    <td className="py-4 px-6 text-center">
+                                        <div className="flex justify-center gap-2">
+                                            {/* TOMBOL KELOLA SYARAT */}
+                                            <button onClick={() => openSyaratModal(item)} className="p-2 bg-purple-100 text-purple-600 rounded-full hover:bg-purple-200" title="Kelola Syarat">
+                                                <List size={16} />
+                                            </button>
+                                            
+                                            <button onClick={() => handleOpenModal(item)} className="p-2 bg-yellow-100 text-yellow-600 rounded-full hover:bg-yellow-200" title="Edit Info">
+                                                <Edit size={16} />
+                                            </button>
+                                            
+                                            <button onClick={() => handleDelete(item.id)} className="p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200" title="Hapus">
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody className="text-gray-600 text-sm font-light">
-                                {isLoading ? (
-                                    <tr><td colSpan="6" className="py-8 text-center text-gray-400">Sedang memuat data...</td></tr>
-                                ) : jenisSuratList.length > 0 ? (
-                                    jenisSuratList.map((item, index) => (
-                                        <tr key={item.id || index} className="border-b border-gray-200 hover:bg-gray-50 transition">
-                                            <td className="py-4 px-6">{index + 1}</td>
-                                            <td className="py-4 px-6 font-mono font-bold text-blue-600 bg-blue-50 rounded text-center">
-                                                {item.kode_surat}
-                                            </td>
-                                            <td className="py-4 px-6 font-medium text-gray-800 text-base">
-                                                {item.nama_surat}
-                                            </td>
-                                            <td className="py-4 px-6">
-                                                {/* Menampilkan Syarat jika ada (Relasi Backend) */}
-                                                {item.syarat && item.syarat.length > 0 ? (
-                                                    <ul className="list-disc list-inside text-gray-500 space-y-1">
-                                                        {item.syarat.map((syarat, idx) => (
-                                                            <li key={idx}>
-                                                                {syarat.nama_dokumen} 
-                                                                {syarat.wajib === 'Y' && <span className="text-red-500 text-xs ml-1">(Wajib)</span>}
-                                                            </li>
-                                                        ))}
-                                                    </ul>
-                                                ) : (
-                                                    <span className="text-gray-400 italic text-xs flex items-center gap-1">
-                                                        <AlertCircle size={12} /> Belum ada syarat
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-6 text-center">
-                                                 {item.status_aktif === 'Y' ? (
-                                                    <span className="bg-green-100 text-green-700 py-1 px-3 rounded-full text-xs font-bold flex items-center justify-center gap-1 w-fit mx-auto">
-                                                        <CheckCircle size={12} /> Aktif
-                                                    </span>
-                                                ) : (
-                                                    <span className="bg-red-100 text-red-700 py-1 px-3 rounded-full text-xs font-bold w-fit mx-auto">
-                                                        Non-Aktif
-                                                    </span>
-                                                )}
-                                            </td>
-                                            <td className="py-4 px-6 text-center">
-                                                <div className="flex item-center justify-center gap-2">
-                                                    <button 
-                                                        onClick={() => handleOpenModal(item)}
-                                                        className="p-2 rounded-full bg-yellow-100 text-yellow-600 hover:bg-yellow-200 transition"
-                                                        title="Edit"
-                                                    >
-                                                        <Edit size={16} />
-                                                    </button>
-                                                    <button 
-                                                        onClick={() => handleDelete(item.id)}
-                                                        className="p-2 rounded-full bg-red-100 text-red-600 hover:bg-red-200 transition"
-                                                        title="Hapus"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                ) : (
-                                    <tr><td colSpan="6" className="py-8 text-center text-gray-500">Belum ada data jenis surat.</td></tr>
-                                )}
-                            </tbody>
-                        </table>
-                    </div>
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
 
-                {/* --- MODAL FORM --- */}
+                {/* --- MODAL 1: FORM JENIS SURAT (Tambah/Edit Nama Surat) --- */}
                 {showModal && (
-                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm transition-opacity">
-                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg transform transition-all scale-100 p-6 relative">
-                            
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-gray-800">
-                                    {isEditing ? 'Edit Jenis Surat' : 'Tambah Jenis Surat Baru'}
-                                </h2>
-                                <button onClick={() => setShowModal(false)} className="text-gray-400 hover:text-gray-600">
-                                    X
-                                </button>
-                            </div>
-
-                            <form onSubmit={handleSubmit} className="space-y-4">
+                    <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
+                        <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
+                            <h2 className="text-xl font-bold mb-4">{isEditing ? 'Edit Surat' : 'Surat Baru'}</h2>
+                            <form onSubmit={handleMainSubmit} className="space-y-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Kode Surat</label>
-                                    <input 
-                                        type="text" 
-                                        name="kode_surat"
-                                        value={formData.kode_surat}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none uppercase"
-                                        placeholder="Contoh: 470 (SKTM)"
-                                        required 
-                                    />
-                                    <small className="text-gray-400">Kode klasifikasi arsip (Nomor Surat)</small>
+                                    <label className="text-sm font-bold text-gray-700">Kode</label>
+                                    <input type="text" value={formData.kode_surat} onChange={e => setFormData({...formData, kode_surat: e.target.value})} className="w-full border rounded p-2 uppercase" required />
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Nama Surat</label>
-                                    <input 
-                                        type="text" 
-                                        name="nama_surat"
-                                        value={formData.nama_surat}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
-                                        placeholder="Contoh: Surat Keterangan Tidak Mampu"
-                                        required 
-                                    />
+                                    <label className="text-sm font-bold text-gray-700">Nama Surat</label>
+                                    <input type="text" value={formData.nama_surat} onChange={e => setFormData({...formData, nama_surat: e.target.value})} className="w-full border rounded p-2" required />
                                 </div>
-
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <select 
-                                        name="status_aktif"
-                                        value={formData.status_aktif}
-                                        onChange={handleInputChange}
-                                        className="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 bg-white"
-                                    >
-                                        <option value="Y">Aktif (Bisa Diajukan)</option>
-                                        <option value="T">Tidak Aktif</option>
+                                    <label className="text-sm font-bold text-gray-700">Status</label>
+                                    <select value={formData.status_aktif} onChange={e => setFormData({...formData, status_aktif: e.target.value})} className="w-full border rounded p-2">
+                                        <option value="Y">Aktif</option>
+                                        <option value="T">Non-Aktif</option>
                                     </select>
                                 </div>
-
-                                <div className="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-100">
-                                    <button 
-                                        type="button" 
-                                        onClick={() => setShowModal(false)}
-                                        className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium"
-                                    >
-                                        Batal
-                                    </button>
-                                    <button 
-                                        type="submit" 
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-md"
-                                    >
-                                        Simpan
-                                    </button>
+                                <div className="flex justify-end gap-2 mt-4">
+                                    <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-gray-200 rounded">Batal</button>
+                                    <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded">Simpan</button>
                                 </div>
                             </form>
                         </div>
                     </div>
                 )}
+
+                {/* --- MODAL 2: KELOLA SYARAT (Tambah/Hapus Syarat) --- */}
+                {showSyaratModal && selectedSurat && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
+                        <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
+                            <div className="bg-purple-600 p-4 text-white flex justify-between items-center">
+                                <h3 className="font-bold">Syarat Dokumen: {selectedSurat.nama_surat}</h3>
+                                <button onClick={() => setShowSyaratModal(false)}><X size={20} /></button>
+                            </div>
+                            
+                            <div className="p-6">
+                                {/* Form Tambah Syarat Kecil */}
+                                <form onSubmit={handleAddSyarat} className="flex gap-2 mb-6 items-end bg-gray-50 p-3 rounded-lg border">
+                                    <div className="flex-1">
+                                        <label className="text-xs font-bold text-gray-500">Nama Dokumen</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Contoh: Fotocopy KTP" 
+                                            className="w-full border p-2 rounded text-sm"
+                                            value={newSyarat.nama_dokumen}
+                                            onChange={e => setNewSyarat({...newSyarat, nama_dokumen: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="w-24">
+                                        <label className="text-xs font-bold text-gray-500">Wajib?</label>
+                                        <select 
+                                            className="w-full border p-2 rounded text-sm"
+                                            value={newSyarat.wajib}
+                                            onChange={e => setNewSyarat({...newSyarat, wajib: e.target.value})}
+                                        >
+                                            <option value="Y">Ya</option>
+                                            <option value="T">Tidak</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" className="bg-purple-600 hover:bg-purple-700 text-white p-2 rounded shadow">
+                                        <Plus size={20} />
+                                    </button>
+                                </form>
+
+                                {/* List Syarat yang Sudah Ada */}
+                                <div className="space-y-2 max-h-60 overflow-y-auto">
+                                    <h4 className="text-sm font-bold text-gray-700 mb-2">Daftar Syarat Saat Ini:</h4>
+                                    
+                                    {selectedSurat.syarat && selectedSurat.syarat.length > 0 ? (
+                                        selectedSurat.syarat.map((s) => (
+                                            <div key={s.id} className="flex justify-between items-center bg-white border p-3 rounded-lg shadow-sm">
+                                                <div className="flex items-center gap-2">
+                                                    <FileText size={16} className="text-gray-400" />
+                                                    <span className="text-sm font-medium">{s.nama_dokumen}</span>
+                                                    {s.wajib === 'Y' && <span className="bg-red-100 text-red-600 text-[10px] px-2 rounded-full font-bold">Wajib</span>}
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleDeleteSyarat(s.id)}
+                                                    className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-center text-gray-400 text-sm py-4">Belum ada syarat yang ditambahkan.</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
             </div>
         </div>
     );

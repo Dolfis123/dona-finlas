@@ -182,3 +182,20 @@ exports.deleteJenisSurat = async (req, res) => {
     res.status(500).json({ message: "Gagal hapus. Hapus dulu syarat surat ini!", error: error.message });
   }
 };
+
+// ... kode controller sebelumnya ...
+
+// 6. DELETE SYARAT (Hapus item syarat, misal: hapus syarat "KTP")
+exports.deleteSyarat = async (req, res) => {
+  try {
+    const { id } = req.params; // ID dari tabel syarat_surat
+    const syarat = await SyaratSurat.findByPk(id);
+
+    if (!syarat) return res.status(404).json({ message: "Syarat tidak ditemukan" });
+
+    await syarat.destroy();
+    res.status(200).json({ message: "Syarat berhasil dihapus" });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal menghapus syarat", error: error.message });
+  }
+};
