@@ -70,7 +70,7 @@ const HomePage = () => {
     },
     {
       id: 3,
-      nama: "Surat Keterangan Orang Asli Papua",
+      nama: "Surat Keterangan Orang Papua",
       icon: <FileText className="w-8 h-8 text-blue-600" />,
     },
     {
