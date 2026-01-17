@@ -107,15 +107,15 @@ exports.createJenisSurat = async (req, res) => {
 };
 
 // Tambah Syarat untuk surat tertentu
-exports.addSyaratSurat = async (req, res) => {
-  try {
-    const { id_jenis, nama_dokumen, wajib } = req.body;
-    const newSyarat = await SyaratSurat.create({ id_jenis, nama_dokumen, wajib });
-    res.status(201).json({ message: "Syarat berhasil ditambahkan", data: newSyarat });
-  } catch (error) {
-    res.status(500).json({ message: "Gagal menambah syarat", error: error.message });
-  }
-};
+// exports.addSyaratSurat = async (req, res) => {
+//   try {
+//     const { id_jenis, nama_dokumen, wajib } = req.body;
+//     const newSyarat = await SyaratSurat.create({ id_jenis, nama_dokumen, wajib });
+//     res.status(201).json({ message: "Syarat berhasil ditambahkan", data: newSyarat });
+//   } catch (error) {
+//     res.status(500).json({ message: "Gagal menambah syarat", error: error.message });
+//   }
+// };
 
 // ==========================================
 // 5. DELETE: Hapus pegawai
@@ -185,10 +185,30 @@ exports.deleteJenisSurat = async (req, res) => {
 
 // ... kode controller sebelumnya ...
 
-// 6. DELETE SYARAT (Hapus item syarat, misal: hapus syarat "KTP")
+// 1. TAMBAH SYARAT
+exports.addSyaratSurat = async (req, res) => {
+  try {
+    const { id_jenis, nama_dokumen, wajib } = req.body;
+    // Validasi sederhana
+    if (!id_jenis || !nama_dokumen) {
+        return res.status(400).json({ message: "Data tidak lengkap" });
+    }
+
+    const newSyarat = await SyaratSurat.create({ 
+        id_jenis, 
+        nama_dokumen, 
+        wajib: wajib || 'Y' 
+    });
+    res.status(201).json({ message: "Syarat ditambahkan", data: newSyarat });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal menambah syarat", error: error.message });
+  }
+};
+
+// 2. HAPUS SYARAT
 exports.deleteSyarat = async (req, res) => {
   try {
-    const { id } = req.params; // ID dari tabel syarat_surat
+    const { id } = req.params;
     const syarat = await SyaratSurat.findByPk(id);
 
     if (!syarat) return res.status(404).json({ message: "Syarat tidak ditemukan" });

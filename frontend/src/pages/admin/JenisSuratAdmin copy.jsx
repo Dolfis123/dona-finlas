@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { FileText, Plus, Edit, Trash2, List, X, Save } from 'lucide-react';
+import { FileText, Plus, Edit, Trash2, List, X, Save, AlertCircle } from 'lucide-react';
 
 const JenisSuratAdmin = () => {
     // --- STATE UTAMA ---
@@ -14,17 +13,19 @@ const JenisSuratAdmin = () => {
 
     // --- STATE MODAL SYARAT (Persyaratan Dokumen) ---
     const [showSyaratModal, setShowSyaratModal] = useState(false);
-    const [selectedSurat, setSelectedSurat] = useState(null); // Surat yang sedang diedit syaratnya
+    const [selectedSurat, setSelectedSurat] = useState(null); 
     const [newSyarat, setNewSyarat] = useState({ nama_dokumen: '', wajib: 'Y' });
 
-    // URL API
+    // --- KONFIGURASI API (PERBAIKAN URL) ---
+    // Kita arahkan ke folder "master", nanti tinggal tambah "/jenis" atau "/syarat"
+    const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master`; 
 
- const API_URL = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
     // --- 1. FETCH DATA UTAMA ---
     const fetchJenisSurat = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(API_URL);
+            // Panggil ke /jenis
+            const response = await fetch(`${API_BASE}/jenis`);
             const data = await response.json();
             setJenisSuratList(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -51,8 +52,7 @@ const JenisSuratAdmin = () => {
 
     const handleMainSubmit = async (e) => {
         e.preventDefault();
-        // const url = isEditing ? `${API_URL}/jenis/${formData.id}` : `${API_URL}/jenis`;
-         const url = isEditing ? `${API_URL}/${formData.id}` : API_URL;
+        const url = isEditing ? `${API_BASE}/jenis/${formData.id}` : `${API_BASE}/jenis`;
         const method = isEditing ? 'PUT' : 'POST';
 
         try {
@@ -68,12 +68,10 @@ const JenisSuratAdmin = () => {
         }
     };
 
-
-    // --- 4. DELETE ---
     const handleDelete = async (id) => {
-        if (window.confirm("Yakin ingin menghapus jenis surat ini? Data syarat terkait mungkin juga akan hilang.")) {
+        if (window.confirm("Yakin ingin menghapus jenis surat ini?")) {
             try {
-                const response = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+                const response = await fetch(`${API_BASE}/jenis/${id}`, { method: 'DELETE' });
                 if (response.ok) {
                     alert("Berhasil dihapus.");
                     fetchJenisSurat();
@@ -88,45 +86,46 @@ const JenisSuratAdmin = () => {
 
     // --- 3. HANDLERS SYARAT (SUB-DATA) ---
     
-    // Buka Modal Kelola Syarat
+    // Buka Modal
     const openSyaratModal = (surat) => {
-        setSelectedSurat(surat); // Simpan surat yang dipilih ke state
-        setNewSyarat({ nama_dokumen: '', wajib: 'Y' }); // Reset form input syarat
+        setSelectedSurat(surat); 
+        setNewSyarat({ nama_dokumen: '', wajib: 'Y' }); 
         setShowSyaratModal(true);
     };
 
-    // Tambah Syarat Baru
+    // Tambah Syarat
     const handleAddSyarat = async (e) => {
         e.preventDefault();
         if(!newSyarat.nama_dokumen) return;
 
         try {
-            const response = await fetch(`${API_URL}/syarat`, {
+            // PERHATIKAN URL INI: /syarat (Bukan /jenis/syarat)
+            const response = await fetch(`${API_BASE}/syarat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    id_jenis: selectedSurat.id, // ID Surat yg sedang dibuka
+                    id_jenis: selectedSurat.id,
                     nama_dokumen: newSyarat.nama_dokumen,
                     wajib: newSyarat.wajib
                 })
             });
 
             if (response.ok) {
-                // Refresh data agar syarat baru muncul
+                // 1. Refresh Data Tabel Utama
                 await fetchJenisSurat(); 
                 
-                // Update tampilan modal secara manual agar langsung terlihat tanpa tutup modal
-                // Kita cari data surat terbaru dari server, lalu update selectedSurat
-                const resBaru = await fetch(`${API_URL}/jenis`);
+                // 2. Update Data di Modal secara realtime
+                // Kita ambil ulang data dari server agar ID syarat terbaru terbawa
+                const resBaru = await fetch(`${API_BASE}/jenis`);
                 const dataBaru = await resBaru.json();
                 const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
-                setSelectedSurat(suratTerupdate);
                 
-                // Reset input
-                setNewSyarat({ nama_dokumen: '', wajib: 'Y' });
+                setSelectedSurat(suratTerupdate); // Update state modal
+                setNewSyarat({ nama_dokumen: '', wajib: 'Y' }); // Reset input
             }
         } catch (error) {
             console.error(error);
+            alert("Gagal menambah syarat");
         }
     };
 
@@ -135,13 +134,12 @@ const JenisSuratAdmin = () => {
         if(!window.confirm("Hapus syarat ini?")) return;
 
         try {
-            const response = await fetch(`${API_URL}/syarat/${id_syarat}`, { method: 'DELETE' });
+            const response = await fetch(`${API_BASE}/syarat/${id_syarat}`, { method: 'DELETE' });
             if (response.ok) {
-                // Refresh data
                 await fetchJenisSurat();
                 
                 // Update tampilan modal
-                const resBaru = await fetch(`${API_URL}/jenis`);
+                const resBaru = await fetch(`${API_BASE}/jenis`);
                 const dataBaru = await resBaru.json();
                 const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
                 setSelectedSurat(suratTerupdate);
@@ -200,7 +198,9 @@ const JenisSuratAdmin = () => {
                                                 ))}
                                             </div>
                                         ) : (
-                                            <span className="text-gray-400 text-xs italic">Belum ada syarat</span>
+                                            <span className="text-gray-400 text-xs italic flex items-center gap-1">
+                                                <AlertCircle size={12}/> Belum ada syarat
+                                            </span>
                                         )}
                                     </td>
                                     <td className="py-4 px-6 text-center">
@@ -230,7 +230,7 @@ const JenisSuratAdmin = () => {
                     </table>
                 </div>
 
-                {/* --- MODAL 1: FORM JENIS SURAT (Tambah/Edit Nama Surat) --- */}
+                {/* --- MODAL 1: FORM JENIS SURAT --- */}
                 {showModal && (
                     <div className="fixed inset-0 z-40 flex items-center justify-center bg-black bg-opacity-50">
                         <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-md">
@@ -260,7 +260,7 @@ const JenisSuratAdmin = () => {
                     </div>
                 )}
 
-                {/* --- MODAL 2: KELOLA SYARAT (Tambah/Hapus Syarat) --- */}
+                {/* --- MODAL 2: KELOLA SYARAT (Full Function) --- */}
                 {showSyaratModal && selectedSurat && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 backdrop-blur-sm">
                         <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
@@ -270,7 +270,7 @@ const JenisSuratAdmin = () => {
                             </div>
                             
                             <div className="p-6">
-                                {/* Form Tambah Syarat Kecil */}
+                                {/* Form Input Syarat */}
                                 <form onSubmit={handleAddSyarat} className="flex gap-2 mb-6 items-end bg-gray-50 p-3 rounded-lg border">
                                     <div className="flex-1">
                                         <label className="text-xs font-bold text-gray-500">Nama Dokumen</label>
@@ -299,7 +299,7 @@ const JenisSuratAdmin = () => {
                                     </button>
                                 </form>
 
-                                {/* List Syarat yang Sudah Ada */}
+                                {/* Daftar Syarat */}
                                 <div className="space-y-2 max-h-60 overflow-y-auto">
                                     <h4 className="text-sm font-bold text-gray-700 mb-2">Daftar Syarat Saat Ini:</h4>
                                     
@@ -314,6 +314,7 @@ const JenisSuratAdmin = () => {
                                                 <button 
                                                     onClick={() => handleDeleteSyarat(s.id)}
                                                     className="text-red-400 hover:text-red-600 p-1 hover:bg-red-50 rounded"
+                                                    title="Hapus Syarat"
                                                 >
                                                     <Trash2 size={16} />
                                                 </button>

@@ -10,9 +10,9 @@ router.post("/master/pegawai", masterController.createPegawai);
 
 router.get("/master/jenis", masterController.getAllJenisSurat);
 router.post("/master/jenis", masterController.createJenisSurat);
-router.post("/master/syarat", masterController.addSyaratSurat);
 router.put("/master/jenis/:id", masterController.updateJenisSurat);
 router.delete("/master/jenis/:id", masterController.deleteJenisSurat);
+router.post("/master/syarat", masterController.addSyaratSurat);
 router.delete("/master/syarat/:id", masterController.deleteSyarat);
 // --- ROUTE PUBLIC (WARGA) ---
 router.post("/ajukan", pengajuanController.ajukanSurat); // Warga kirim form
