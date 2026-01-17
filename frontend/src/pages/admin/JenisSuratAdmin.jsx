@@ -20,18 +20,24 @@ const JenisSuratAdmin = () => {
     // URL API
 const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
 
-    // --- 1. FETCH DATA UTAMA ---
-    const fetchJenisSurat = async () => {
-        setIsLoading(true);
-        try {
-            const response = await fetch(`${API_BASE}/jenis`);
-            const data = await response.json();
-            setJenisSuratList(Array.isArray(data) ? data : []);
-        } catch (error) {
-            console.error("Error:", error);
-        }
-        setIsLoading(false);
-    };
+
+  // --- 1. FETCH DATA UTAMA ---
+const fetchJenisSurat = async () => {
+    setIsLoading(true);
+    try {
+        // PERBAIKAN: Hapus "/jenis" karena sudah ada di API_BASE
+        const response = await fetch(API_BASE); 
+        
+        // Cek status dulu biar aman
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const data = await response.json();
+        setJenisSuratList(Array.isArray(data) ? data : []);
+    } catch (error) {
+        console.error("Error fetching data:", error);
+    }
+    setIsLoading(false);
+};
 
     useEffect(() => {
         fetchJenisSurat();
@@ -49,24 +55,34 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
         setShowModal(true);
     };
 
-    const handleMainSubmit = async (e) => {
-        e.preventDefault();
-        const url = isEditing ? `${API_BASE}/jenis/${formData.id}` : `${API_BASE}/jenis`;
-        const method = isEditing ? 'PUT' : 'POST';
+ const handleMainSubmit = async (e) => {
+    e.preventDefault();
+    
+    // PERBAIKAN LOGIC URL
+    // Jika Edit: .../master/jenis/{id}
+    // Jika Baru: .../master/jenis
+    const url = isEditing ? `${API_BASE}/${formData.id}` : API_BASE;
+    
+    const method = isEditing ? 'PUT' : 'POST';
 
-        try {
-            await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData)
-            });
-            fetchJenisSurat();
-            setShowModal(false);
-        } catch (error) {
-            alert("Gagal menyimpan data.");
+    try {
+        const response = await fetch(url, { // Gunakan variable url yang sudah dibenarkan
+            method: method,
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            throw new Error("Gagal menyimpan data");
         }
-    };
 
+        fetchJenisSurat();
+        setShowModal(false);
+    } catch (error) {
+        console.error(error);
+        alert("Gagal menyimpan data.");
+    }
+};
     const handleDelete = async (id) => {
         if (window.confirm("Hapus jenis surat ini?")) {
             await fetch(`${API_BASE}/jenis/${id}`, { method: 'DELETE' });
