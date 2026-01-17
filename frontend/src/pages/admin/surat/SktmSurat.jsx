@@ -4,7 +4,7 @@ import api from '../../../utils/api';
 import html2pdf from 'html2pdf.js';
 import './SktmSurat.css';
 import logoMkw from './assets/logi-mkw.png';
-import { Printer, Download } from 'lucide-react';
+import { Printer } from 'lucide-react';
 
 const SktmSurat = () => {
   const { id } = useParams();
