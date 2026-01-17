@@ -65,12 +65,12 @@ const HomePage = () => {
     },
     {
       id: 2,
-      nama: "SKTM",
+      nama: "Suarat Keterangan Tidak Mampu",
       icon: <FileText className="w-8 h-8 text-blue-600" />,
     },
     {
       id: 3,
-      nama: "Pengantar Nikah",
+      nama: "Surat Keterangan Orang Asli Papua",
       icon: <FileText className="w-8 h-8 text-blue-600" />,
     },
     {
