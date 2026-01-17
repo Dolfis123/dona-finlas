@@ -68,12 +68,12 @@ const OapSurat = () => {
         >
             <Printer size={18} /> Cetak (Browser)
         </button>
-        <button 
+        {/* <button 
             onClick={handleDownloadPDF}
             className="flex items-center gap-2 bg-blue-600 text-white px-5 py-2 rounded shadow hover:bg-blue-700 font-bold"
         >
             <Download size={18} /> Unduh File PDF
-        </button>
+        </button> */}
       </div>
 
       {/* KERTAS SURAT */}
