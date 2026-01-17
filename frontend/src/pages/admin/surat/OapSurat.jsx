@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../../../utils/api'; 
 import html2pdf from 'html2pdf.js';
 import './SktmSurat.css'; // Gunakan CSS yang sama agar konsisten
-import logoMkw from './/assets/logi-mkw.png';
+import logoMkw from './assets/logi-mkw.png';
 import { Printer, Download } from 'lucide-react';
 
 const OapSurat = () => {

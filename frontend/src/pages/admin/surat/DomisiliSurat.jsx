@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import api from '../../../utils/api'; // Sesuaikan path
 import html2pdf from 'html2pdf.js';
 import './SktmSurat.css'; // Kita gunakan CSS yang sama agar hemat file
-import logoMkw from './/assets/logi-mkw.png'; // Sesuaikan path logo
+import logoMkw from './assets/logi-mkw.png'; // Sesuaikan path logo
 import { Printer, Download } from 'lucide-react';
 
 const DomisiliSurat = () => {

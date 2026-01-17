@@ -18,7 +18,7 @@ const JenisSuratAdmin = () => {
 
     // URL API (Sesuaikan dengan route backend Anda)
     // Asumsi: Anda meletakkan routes surat di /api/surat/jenis
-    const API_URL = 'http://localhost:8000/api/surat/master/jenis'; 
+    const API_URL = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
 
     // --- 1. FETCH DATA (READ) ---
     const fetchJenisSurat = async () => {
