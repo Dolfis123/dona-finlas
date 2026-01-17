@@ -114,7 +114,7 @@ const HomePage = () => {
               {pengaturan.home_subjudul}
             </p>
             <Link
-              to="/pelayanan"
+              to="/pengajuan-surat"
               className="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-full mt-8 hover:bg-blue-700 transition-colors duration-300 transform hover:scale-105"
             >
               Jelajahi Layanan
@@ -137,7 +137,7 @@ const HomePage = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
             {layananUnggulan.map((layanan) => (
               <Link
-                to="/pelayanan"
+                to="/pengajuan-surat"
                 key={layanan.id}
                 className="bg-white p-6 rounded-lg shadow-lg text-center group hover:shadow-xl hover:-translate-y-2 transition-all duration-300 border-t-4 border-transparent hover:border-blue-500"
               >

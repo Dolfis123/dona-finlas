@@ -36,7 +36,7 @@ const Footer = () => {
               </li>
               <li>
                 <Link
-                  to="/pelayanan"
+                  to="/pengajuan-surat"
                   className="text-gray-400 hover:text-white"
                 >
                   Layanan
