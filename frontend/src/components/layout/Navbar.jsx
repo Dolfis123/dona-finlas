@@ -61,7 +61,7 @@ const Navbar = () => {
         { name: "Agenda Kegiatan", path: "/agenda" },
       ],
     },
-    { name: "Layanan", path: "/pelayanan" },
+    { name: "Layanan", path: "/pengajuan-surat" },
     {
       name: "Publikasi",
       dropdown: [

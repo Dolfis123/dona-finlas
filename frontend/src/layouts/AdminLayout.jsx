@@ -17,9 +17,11 @@ const AdminLayout = () => {
     const path = location.pathname;
     if (path.includes("/dashboard")) return "Dashboard";
     if (path.includes("/sktm")) return "Surat Keterangan Tidak Mampu (SKTM)";
-    if (path.includes("/validasi-surat")) return "Validasi Surat Online";
+    if (path.includes("/surat/pengajuan")) return "Validasi Surat Online";
+    if (path.includes("/pegawai")) return "Manajemen Pegawai";
+    if (path.includes("/surat/jenis")) return "Master Jenis Surat";
     if (path.includes("/validasi-surat/:id")) return "Detail Validasi Surat";
-    if (path.includes("/arsip-surat")) return "Arsip Surat";
+    if (path.includes("/surat/arsip")) return "Arsip Surat";
     if (path.includes("/berita")) return "Manajemen Berita";
     if (path.includes("/pengumuman")) return "Manajemen Pengumuman";
     if (path.includes("/galeri")) return "Manajemen Galeri";

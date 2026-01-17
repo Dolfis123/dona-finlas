@@ -10,7 +10,7 @@ import HomePage from "./pages/users/HomePage";
 import AboutPage from "./pages/users/AboutPage";
 import BeritaPage from "./pages/users/BeritaPage";
 import PengumumanPage from "./pages/users/PengumumanPage";
-import PelayananPage from "./pages/users/PelayananPage";
+// import PelayananPage from "./pages/users/PelayananPage";
 import GaleriPage from "./pages/users/GaleriPage";
 import StrukturOrganisasiPage from "./pages/users/StrukturOrganisasiPage";
 import KontakPage from "./pages/users/KontakPage";
@@ -45,9 +45,14 @@ import ArsipSurat from "./pages/admin/ArsipSurat";
 import SktmSurat from "./pages/admin/surat/SktmSurat";
 // ... import DomisiliSurat
 import DomisiliSurat from "./pages/admin/surat/DomisiliSurat";
-
+// ... import ManajemenPegawai
+import ManajemenPegawai from "./pages/admin/ManajemenPegawai";  
 // ... import halaman oapSurat
 import OapSurat from "./pages/admin/surat/OapSurat";
+
+// Import JenisSuratPage  
+import JenisSuratPage from "./pages/admin/JenisSuratAdmin";
+// Import Halaman Kelola Layanan dan Pengaturan
 // Placeholder
 const KelolaLayananPage = () => <div className="text-xl">Halaman Kelola Layanan</div>;
 const PengaturanPage = () => <div className="text-xl">Halaman Pengaturan</div>;
@@ -61,7 +66,6 @@ function App() {
 
         
         {/* ✅ BENAR: Pengajuan Surat bisa diakses publik */}
-        <Route path="/pengajuan-surat" element={<PengajuanSurat />} /> 
         
         <Route path="/about" element={<AboutPage />} />
         <Route path="/struktur-organisasi" element={<StrukturOrganisasiPage />} />
@@ -73,19 +77,22 @@ function App() {
         <Route path="/berita/:id" element={<BeritaDetailPage />} />
         <Route path="/pengumuman" element={<PengumumanPage />} />
         <Route path="/agenda" element={<AgendaPage />} />
-        <Route path="/pelayanan" element={<PelayananPage />} />
+        <Route path="pengajuan-surat" element={<PengajuanSurat />} /> 
+        {/* <Route path="/pelayanan" element={<PelayananPage />} /> */}
         <Route path="/kontak" element={<KontakPage />} />
       </Route>
 
       {/* --- RUTE UNTUK ADMIN (AdminLayout) --- */}
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="surat/jenis" element={<JenisSuratPage />} />
         
         {/* ✅ PERBAIKAN: Validasi Surat dipindah ke sini (Area Admin) */}
         {/* URL nanti menjadi: http://localhost:5173/admin/validasi-surat */}
-        <Route path="validasi-surat" element={<ValidasiSurat />} />
+        <Route path="surat/pengajuan" element={<ValidasiSurat />} />
         <Route path="validasi-surat/:id" element={<DetailValidasi />} />
-        <Route path="arsip-surat" element={<ArsipSurat />} />
+        <Route path="surat/arsip" element={<ArsipSurat />} />
+        <Route path="pegawai" element={<ManajemenPegawai />} />
 
 
         <Route path="berita" element={<BeritaAdminPage />} />
