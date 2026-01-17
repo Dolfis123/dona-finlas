@@ -16,7 +16,7 @@ const ManajemenPegawai = () => {
     status_aktif: "Y",
   });
 
-  const API_URL = "http://localhost:8000/api/pegawai"; 
+  const API_URL = `${import.meta.env.VITE_BACKEND_URL}/pegawai`;
 
   // --- 1. FETCH DATA ---
   const fetchPegawai = async () => {
