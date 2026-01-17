@@ -18,13 +18,13 @@ const JenisSuratAdmin = () => {
     const [newSyarat, setNewSyarat] = useState({ nama_dokumen: '', wajib: 'Y' });
 
     // URL API
-const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
 
+ const API_URL = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`; 
     // --- 1. FETCH DATA UTAMA ---
     const fetchJenisSurat = async () => {
         setIsLoading(true);
         try {
-            const response = await fetch(`${API_BASE}/jenis`);
+            const response = await fetch(`${API_URL}/jenis`);
             const data = await response.json();
             setJenisSuratList(Array.isArray(data) ? data : []);
         } catch (error) {
@@ -51,7 +51,7 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
 
     const handleMainSubmit = async (e) => {
         e.preventDefault();
-        const url = isEditing ? `${API_BASE}/jenis/${formData.id}` : `${API_BASE}/jenis`;
+        const url = isEditing ? `${API_URL}/jenis/${formData.id}` : `${API_URL}/jenis`;
         const method = isEditing ? 'PUT' : 'POST';
 
         try {
@@ -69,7 +69,7 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
 
     const handleDelete = async (id) => {
         if (window.confirm("Hapus jenis surat ini?")) {
-            await fetch(`${API_BASE}/jenis/${id}`, { method: 'DELETE' });
+            await fetch(`${API_URL}/jenis/${id}`, { method: 'DELETE' });
             fetchJenisSurat();
         }
     };
@@ -89,7 +89,7 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
         if(!newSyarat.nama_dokumen) return;
 
         try {
-            const response = await fetch(`${API_BASE}/syarat`, {
+            const response = await fetch(`${API_URL}/syarat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -105,7 +105,7 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
                 
                 // Update tampilan modal secara manual agar langsung terlihat tanpa tutup modal
                 // Kita cari data surat terbaru dari server, lalu update selectedSurat
-                const resBaru = await fetch(`${API_BASE}/jenis`);
+                const resBaru = await fetch(`${API_URL}/jenis`);
                 const dataBaru = await resBaru.json();
                 const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
                 setSelectedSurat(suratTerupdate);
@@ -123,13 +123,13 @@ const API_BASE = `${import.meta.env.VITE_BACKEND_URL}/surat/master/jenis`;
         if(!window.confirm("Hapus syarat ini?")) return;
 
         try {
-            const response = await fetch(`${API_BASE}/syarat/${id_syarat}`, { method: 'DELETE' });
+            const response = await fetch(`${API_URL}/syarat/${id_syarat}`, { method: 'DELETE' });
             if (response.ok) {
                 // Refresh data
                 await fetchJenisSurat();
                 
                 // Update tampilan modal
-                const resBaru = await fetch(`${API_BASE}/jenis`);
+                const resBaru = await fetch(`${API_URL}/jenis`);
                 const dataBaru = await resBaru.json();
                 const suratTerupdate = dataBaru.find(s => s.id === selectedSurat.id);
                 setSelectedSurat(suratTerupdate);
