@@ -50,24 +50,50 @@ const loginUser = async(req, res) => {
     const { username, password } = req.body;
 
     try {
+        console.log("=== Upaya Login ===");
+        console.log("Username Input:", username);
+
         // 1. Cari user berdasarkan username
         const user = await User.findOne({ where: { username } });
 
-        // 2. Jika user ditemukan, bandingkan password yang diinput dengan yang ada di DB
-        if (user && (await bcrypt.compare(password, user.password))) {
-            res.json({
+        // Jika user tidak ditemukan
+        if (!user) {
+            console.log("Hasil: User TIDAK ditemukan di database.");
+            return res.status(401).json({ message: "Username atau password salah" });
+        }
+
+        console.log("Hasil: User ditemukan.");
+        console.log("Hash di Database:", user.password);
+
+        // 2. Bandingkan password yang diinput dengan hash di DB
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        console.log("Password Input:", password);
+        console.log("Apakah Password Cocok?:", isMatch);
+
+        if (isMatch) {
+            // Jika cocok, buat token
+            const token = generateToken(user.id);
+            console.log("Login Berhasil, Token dibuat.");
+
+            return res.json({
                 id: user.id,
                 username: user.username,
                 nama_lengkap: user.nama_lengkap,
-                token: generateToken(user.id),
+                role: user.role,
+                token: token,
             });
         } else {
-            res.status(401).json({ message: "Username atau password salah" });
+            console.log("Hasil: Password salah.");
+            return res.status(401).json({ message: "Username atau password salah" });
         }
+
     } catch (error) {
-        res
-            .status(500)
-            .json({ message: "Terjadi kesalahan pada server", error: error.message });
+        console.error("EROR LOGIN:", error.message);
+        res.status(500).json({
+            message: "Terjadi kesalahan pada server",
+            error: error.message
+        });
     }
 };
 

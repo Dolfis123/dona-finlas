@@ -44,7 +44,7 @@ const AboutAdminPage = () => {
 
   const handleSave = async () => {
     setIsSaving(true);
-    try {
+    try {  
       await aboutApi.update(content);
       showNotification("Konten berhasil disimpan.", "add");
       fetchData(); // Muat ulang data untuk menyinkronkan state
