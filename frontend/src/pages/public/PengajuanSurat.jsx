@@ -1,39 +1,70 @@
 import React, { useState, useEffect, useRef } from "react";
 import api from "../../utils/api";
-import html2pdf from "html2pdf.js"; // Import library PDF
-import { Download, CheckCircle, RefreshCw, AlertCircle } from "lucide-react"; // Import Icon
+import html2pdf from "html2pdf.js";
+import {
+  Download,
+  CheckCircle,
+  RefreshCw,
+  AlertCircle,
+  User,
+  CreditCard,
+  Phone,
+  FileText,
+} from "lucide-react";
 
 const PengajuanSurat = () => {
   const [jenisSuratList, setJenisSuratList] = useState([]);
   const [selectedJenis, setSelectedJenis] = useState("");
-  
+
   // State Data Diri
   const [identitas, setIdentitas] = useState({
-    nik: "", 
-    nama_lengkap: "", 
-    no_hp: ""
+    nik: "",
+    nama_lengkap: "",
+    no_hp: "",
   });
 
   // State Data Form Tambahan
   const [dataDinamis, setDataDinamis] = useState({});
-  
-  // State Sukses & Loading
+
+  // State Validasi & UI
+  const [errors, setErrors] = useState({});
   const [tiketSukses, setTiketSukses] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  // Ref untuk area tiket yang akan di-download
   const tiketRef = useRef();
 
   useEffect(() => {
-    // 1. Ambil Jenis Surat
-    api.get("/surat/master/jenis").then((res) => setJenisSuratList(res.data));
+    api
+      .get("/surat/master/jenis")
+      .then((res) => setJenisSuratList(res.data))
+      .catch((err) => console.error("Gagal ambil jenis surat"));
 
-    // 2. CEK LOCAL STORAGE (Agar data tidak hilang saat refresh)
     const savedTicket = localStorage.getItem("tiket_terakhir");
     if (savedTicket) {
       setTiketSukses(savedTicket);
     }
   }, []);
+
+  // Handler Input NIK (Hanya Angka & Max 16)
+  const handleNikChange = (e) => {
+    const value = e.target.value.replace(/\D/g, ""); // Hapus non-angka
+    if (value.length <= 16) {
+      setIdentitas({ ...identitas, nik: value });
+      if (value.length < 16) {
+        setErrors((prev) => ({ ...prev, nik: "NIK harus 16 digit" }));
+      } else {
+        setErrors((prev) => ({ ...prev, nik: null }));
+      }
+    }
+  };
+
+  // Handler No HP (Format Indonesia)
+  const handlePhoneChange = (e) => {
+    const value = e.target.value.replace(/\D/g, "");
+    if (value.length <= 13) {
+      setIdentitas({ ...identitas, no_hp: value });
+    }
+  };
 
   const handleDinamisChange = (e) => {
     const { name, value } = e.target;
@@ -42,327 +73,405 @@ const PengajuanSurat = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validasi Akhir sebelum kirim
+    if (identitas.nik.length !== 16) {
+      alert("NIK harus tepat 16 digit!");
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
         id_jenis: selectedJenis,
         nik: identitas.nik,
-        nama_lengkap: identitas.nama_lengkap,
+        nama_lengkap: identitas.nama_lengkap.toUpperCase(),
         no_hp: identitas.no_hp,
-        data_form_json: dataDinamis, 
-        data_berkas_json: {} 
+        data_form_json: dataDinamis,
+        data_berkas_json: {},
       };
 
       const res = await api.post("/surat/ajukan", payload);
-      
-      // Simpan tiket ke state DAN LocalStorage
       const tiketBaru = res.data.ticket;
       setTiketSukses(tiketBaru);
-      localStorage.setItem("tiket_terakhir", tiketBaru); // <-- KUNCI ANTI REFRESH
-      
+      localStorage.setItem("tiket_terakhir", tiketBaru);
+      window.scrollTo(0, 0);
     } catch (error) {
-      alert("Gagal mengirim pengajuan. Pastikan semua data terisi.");
-      console.error(error);
+      alert(
+        error.response?.data?.message ||
+          "Gagal mengirim pengajuan. Periksa kembali koneksi anda.",
+      );
     } finally {
-        setLoading(false);
+      setLoading(false);
     }
   };
 
-  // --- FUNGSI RESET (BUAT SURAT BARU) ---
   const handleReset = () => {
-    // Hapus dari penyimpanan saat user ingin buat baru
-    localStorage.removeItem("tiket_terakhir");
-    setTiketSukses(null);
-    setSelectedJenis("");
-    setDataDinamis({});
-    setIdentitas({ nik: "", nama_lengkap: "", no_hp: "" });
-    window.scrollTo(0, 0);
+    if (
+      window.confirm(
+        "Buat pengajuan baru? Tiket saat ini akan terhapus dari tampilan.",
+      )
+    ) {
+      localStorage.removeItem("tiket_terakhir");
+      setTiketSukses(null);
+      setSelectedJenis("");
+      setDataDinamis({});
+      setIdentitas({ nik: "", nama_lengkap: "", no_hp: "" });
+      window.scrollTo(0, 0);
+    }
   };
 
-  // --- FUNGSI DOWNLOAD BUKTI PENDAFTARAN ---
   const handleDownloadTiket = () => {
     const element = tiketRef.current;
     const opt = {
-      margin:       0,
-      filename:     `TIKET_LAYANAN_${tiketSukses}.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { scale: 2 },
-      jsPDF:        { unit: 'mm', format: 'a6', orientation: 'portrait' } // Ukuran kecil (A6) seperti struk
+      margin: 10,
+      filename: `TIKET_${tiketSukses}.pdf`,
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 2, useCORS: true },
+      jsPDF: { unit: "mm", format: "a6", orientation: "portrait" },
     };
     html2pdf().set(opt).from(element).save();
   };
 
-  // --- LOGIC RENDER FORM ---
   const renderFormDinamis = () => {
-    const surat = jenisSuratList.find(j => j.id_jenis === parseInt(selectedJenis));
+    const surat = jenisSuratList.find((j) => j.id === parseInt(selectedJenis));
     if (!surat) return null;
 
-    const namaSurat = surat.nama_surat.toUpperCase();
-    const kodeSurat = surat.kode_surat ? surat.kode_surat.toUpperCase() : "";
+    const kodeSurat = (surat.kode_surat || "").toUpperCase();
+    const namaSurat = (surat.nama_surat || "").toUpperCase();
 
-    // 1. SKTM
+    // TEMPLATE SKTM
     if (kodeSurat === "SKTM" || namaSurat.includes("MAMPU")) {
       return (
-        <div className="space-y-4 border-l-4 border-yellow-400 pl-4 bg-yellow-50 p-4 rounded shadow-sm">
-          <h3 className="font-bold text-lg text-yellow-800 border-b border-yellow-200 pb-2">A. Data Orang Tua / Wali</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input name="nama_ortu" placeholder="Nama Lengkap Orang Tua" className="input-field" onChange={handleDinamisChange} required />
-            <input name="ttl_ortu" placeholder="Tempat, Tgl Lahir" className="input-field" onChange={handleDinamisChange} required />
-            <select name="jk_ortu" className="input-field" onChange={handleDinamisChange} required>
-              <option value="">-- Jenis Kelamin Ortu --</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-            <input name="umur_ortu" type="number" placeholder="Umur (Tahun)" className="input-field" onChange={handleDinamisChange} required />
-            <input name="pekerjaan_ortu" placeholder="Pekerjaan Orang Tua" className="input-field" onChange={handleDinamisChange} required />
-            <input name="penghasilan_ortu" type="number" placeholder="Penghasilan (Angka)" className="input-field" onChange={handleDinamisChange} required />
+        <div className="space-y-6 animate-in fade-in duration-500">
+          <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
+            <h3 className="flex items-center gap-2 font-bold text-amber-900 mb-4">
+              <User size={18} /> Data Orang Tua / Wali
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                name="nama_ortu"
+                placeholder="Nama Lengkap Ortu"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="pekerjaan_ortu"
+                placeholder="Pekerjaan Ortu"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="penghasilan_ortu"
+                type="number"
+                placeholder="Penghasilan Bulanan (Rp)"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="umur_ortu"
+                type="number"
+                placeholder="Umur Ortu"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <textarea
+                name="alamat_ortu"
+                placeholder="Alamat Lengkap Ortu"
+                className="input-field md:col-span-2"
+                rows="2"
+                onChange={handleDinamisChange}
+                required
+              />
+            </div>
           </div>
-          <textarea name="alamat_ortu" placeholder="Alamat Lengkap Orang Tua" className="input-field" rows="2" onChange={handleDinamisChange} required ></textarea>
 
-          <h3 className="font-bold text-lg text-yellow-800 border-b border-yellow-200 pb-2 mt-4">B. Data Mahasiswa</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input name="nim" placeholder="NIM" className="input-field" onChange={handleDinamisChange} required />
-            <input name="kampus" placeholder="Nama Kampus" className="input-field" onChange={handleDinamisChange} required />
-            <input name="fakultas" placeholder="Fakultas" className="input-field" onChange={handleDinamisChange} required />
-            <input name="prodi" placeholder="Program Studi" className="input-field" onChange={handleDinamisChange} required />
-            <input name="keperluan" placeholder="Keperluan" className="input-field md:col-span-2" onChange={handleDinamisChange} required />
+          <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
+            <h3 className="flex items-center gap-2 font-bold text-blue-900 mb-4">
+              <FileText size={18} /> Data Pendidikan / Mahasiswa
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <input
+                name="kampus"
+                placeholder="Nama Perguruan Tinggi"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="nim"
+                placeholder="NIM / No. Induk Mahasiswa"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="prodi"
+                placeholder="Program Studi"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+              <input
+                name="keperluan"
+                placeholder="Tujuan Penggunaan Surat"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+            </div>
           </div>
-        </div>
-      );
-    } 
-    
-    // 2. DOMISILI
-    if (kodeSurat === "DOM" || namaSurat.includes("DOMISILI")) {
-      return (
-        <div className="space-y-4 border-l-4 border-blue-400 pl-4 bg-blue-50 p-4 rounded shadow-sm">
-          <h3 className="font-bold text-lg text-blue-800 border-b border-blue-200 pb-2">Detail Data Domisili</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <input name="ttl" placeholder="Tempat, Tgl Lahir" className="input-field" onChange={handleDinamisChange} required />
-            <select name="jk" className="input-field" onChange={handleDinamisChange} required>
-              <option value="">-- Jenis Kelamin --</option>
-              <option value="Laki-laki">Laki-laki</option>
-              <option value="Perempuan">Perempuan</option>
-            </select>
-            <select name="agama" className="input-field" onChange={handleDinamisChange} required>
-              <option value="">-- Pilih Agama --</option>
-              <option value="Kristen Protestan">Kristen Protestan</option>
-              <option value="Kristen Katolik">Kristen Katolik</option>
-              <option value="Islam">Islam</option>
-              <option value="Hindu">Hindu</option>
-              <option value="Buddha">Buddha</option>
-              <option value="Konghucu">Konghucu</option>
-            </select>
-            <input name="pekerjaan" placeholder="Pekerjaan Saat Ini" className="input-field" onChange={handleDinamisChange} required />
-            <input name="rt_rw" placeholder="RT / RW" className="input-field" onChange={handleDinamisChange} required />
-          </div>
-          <textarea name="alamat_asal" placeholder="Alamat Lengkap" className="input-field" rows="2" onChange={handleDinamisChange} required ></textarea>
-          <input name="keperluan" placeholder="Keperluan" className="input-field w-full" onChange={handleDinamisChange} required />
         </div>
       );
     }
 
-    // 3. OAP
-    if (kodeSurat.includes("OAP") || namaSurat.includes("PAPUA")) {
-        return (
-          <div className="space-y-4 border-l-4 border-green-500 pl-4 bg-green-50 p-4 rounded shadow-sm">
-            <h3 className="font-bold text-lg text-green-800 border-b border-green-200 pb-2">A. Data Pribadi</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input name="ttl" placeholder="Tempat, Tgl Lahir" className="input-field" onChange={handleDinamisChange} required />
-                <select name="jk" className="input-field" onChange={handleDinamisChange} required>
-                    <option value="">-- Jenis Kelamin --</option>
-                    <option value="Laki-laki">Laki-laki</option>
-                    <option value="Perempuan">Perempuan</option>
-                </select>
-                <select name="agama" className="input-field" onChange={handleDinamisChange} required>
-                    <option value="">-- Pilih Agama --</option>
-                    <option value="Kristen Protestan">Kristen Protestan</option>
-                    <option value="Kristen Katolik">Kristen Katolik</option>
-                    <option value="Islam">Islam</option>
-                </select>
-                <input name="pekerjaan" placeholder="Pekerjaan" className="input-field" onChange={handleDinamisChange} required />
-                <input name="alamat_asal" placeholder="Alamat Sesuai KTP" className="input-field" onChange={handleDinamisChange} required />
-                <input name="rt_rw" placeholder="RT / RW" className="input-field" onChange={handleDinamisChange} required />
-            </div>
-  
-            <h3 className="font-bold text-lg text-green-800 border-b border-green-200 pb-2 mt-4">B. Data Ayah</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input name="nama_ayah" placeholder="Nama Lengkap Ayah" className="input-field" onChange={handleDinamisChange} required />
-                <input name="ttl_ayah" placeholder="Tempat, Tgl Lahir Ayah" className="input-field" onChange={handleDinamisChange} required />
-                <input name="nik_ayah" placeholder="NIK Ayah" className="input-field" onChange={handleDinamisChange} required />
-                <input name="pekerjaan_ayah" placeholder="Pekerjaan Ayah" className="input-field" onChange={handleDinamisChange} required />
-                <input name="alamat_ayah" placeholder="Alamat Ayah" className="input-field md:col-span-2" onChange={handleDinamisChange} required />
-            </div>
-
-            <h3 className="font-bold text-lg text-green-800 border-b border-green-200 pb-2 mt-4">C. Data Ibu</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input name="nama_ibu" placeholder="Nama Lengkap Ibu" className="input-field" onChange={handleDinamisChange} required />
-                <input name="ttl_ibu" placeholder="Tempat, Tgl Lahir Ibu" className="input-field" onChange={handleDinamisChange} required />
-                <input name="nik_ibu" placeholder="NIK Ibu" className="input-field" onChange={handleDinamisChange} required />
-                <input name="pekerjaan_ibu" placeholder="Pekerjaan Ibu" className="input-field" onChange={handleDinamisChange} required />
-                <input name="alamat_ibu" placeholder="Alamat Ibu" className="input-field md:col-span-2" onChange={handleDinamisChange} required />
-            </div>
-          </div>
-        );
-      }
-
-    return <div className="text-gray-500 italic p-4 bg-gray-50 rounded">Formulir khusus belum tersedia.</div>;
+    // Default Fallback
+    return (
+      <div className="p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200 text-center">
+        <p className="text-gray-500 italic">
+          Silahkan isi data utama di atas. Petugas akan menghubungi Anda via
+          WhatsApp jika dibutuhkan data tambahan.
+        </p>
+      </div>
+    );
   };
 
-  // --- TAMPILAN SUKSES (DENGAN DOWNLOAD) ---
+  // --- VIEW: SUKSES ---
   if (tiketSukses) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 py-10">
-        
-        {/* CARD BUKTI PENDAFTARAN (UNTUK DITAMPILKAN DAN DIDOWNLOAD) */}
-        <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md w-full border-t-8 border-blue-600">
-          
-          {/* AREA INI YANG AKAN DI-PRINT KE PDF */}
-          <div ref={tiketRef} className="p-4 border-2 border-dashed border-gray-200 rounded mb-4 bg-blue-50">
-            <div className="flex justify-center mb-2">
-                <CheckCircle className="text-green-500 w-12 h-12" />
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
+          <div ref={tiketRef} className="p-8 text-center">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
+              <CheckCircle className="text-green-600 w-12 h-12" />
             </div>
-            <h2 className="text-xl font-bold text-gray-800 uppercase">Bukti Pendaftaran</h2>
-            <p className="text-xs text-gray-500 mb-4">Kelurahan Amban - Layanan Surat Online</p>
-            
-            <div className="text-left bg-white p-3 rounded shadow-sm mb-4">
-                <p className="text-xs text-gray-500">Kode Tiket:</p>
-                <p className="text-2xl font-mono font-bold text-blue-600 tracking-wider mb-2">{tiketSukses}</p>
-                <hr className="my-2"/>
-                <p className="text-xs text-gray-500">Status:</p>
-                <p className="font-bold text-yellow-600 text-sm">PENDING (Menunggu Validasi)</p>
-                <p className="text-xs text-gray-500 mt-2">Tanggal:</p>
-                <p className="font-bold text-gray-700 text-sm">{new Date().toLocaleDateString('id-ID')}</p>
-            </div>
-
-            <div className="text-xs text-gray-600 text-center italic">
-              *Simpan bukti ini untuk pengambilan surat di kantor kelurahan.
-            </div>
-          </div>
-          {/* AKHIR AREA PRINT */}
-
-          <div className="flex flex-col gap-3">
-             <button 
-                onClick={handleDownloadTiket}
-                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-bold shadow-md"
-              >
-                <Download size={20} /> Simpan Bukti (PDF)
-              </button>
-
-              <button 
-                onClick={handleReset} 
-                className="flex items-center justify-center gap-2 w-full py-3 px-4 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
-              >
-                <RefreshCw size={18} /> Buat Surat Baru
-              </button>
-          </div>
-
-          <div className="mt-6 flex items-start gap-2 text-xs text-left text-gray-500 bg-yellow-50 p-3 rounded border border-yellow-200">
-            <AlertCircle size={16} className="text-yellow-600 flex-shrink-0 mt-0.5" />
-            <p>
-                <strong>Catatan:</strong> Jika halaman ini tertutup atau di-refresh, tiket Anda tetap tersimpan di browser ini sampai Anda menekan tombol "Buat Surat Baru".
+            <h2 className="text-2xl font-black text-gray-800 tracking-tight">
+              PENGAJUAN BERHASIL
+            </h2>
+            <p className="text-gray-400 text-sm mt-1">
+              Kelurahan Amban - Papua Barat
             </p>
+
+            <div className="my-8 py-6 px-4 bg-slate-900 rounded-2xl text-white relative">
+              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-r-full"></div>
+              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-l-full"></div>
+              <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">
+                Kode Tiket Anda
+              </p>
+              <p className="text-4xl font-mono font-black text-blue-400">
+                {tiketSukses}
+              </p>
+            </div>
+
+            <div className="space-y-3 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Nama:</span>
+                <span className="font-bold text-gray-800">
+                  {identitas.nama_lengkap.toUpperCase()}
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-500">Status:</span>
+                <span className="font-bold text-orange-500 italic underline">
+                  MENUNGGU VALIDASI
+                </span>
+              </div>
+            </div>
           </div>
 
+          <div className="p-6 bg-gray-100 flex flex-col gap-3">
+            <button
+              onClick={handleDownloadTiket}
+              className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-200"
+            >
+              <Download size={20} /> Simpan Bukti PDF
+            </button>
+            <button
+              onClick={handleReset}
+              className="w-full flex items-center justify-center gap-2 py-3 text-gray-500 font-medium hover:text-gray-800 transition"
+            >
+              <RefreshCw size={18} /> Buat Pengajuan Lain
+            </button>
+          </div>
         </div>
       </div>
     );
   }
 
-  // --- TAMPILAN UTAMA (FORM) ---
+  // --- VIEW: FORM UTAMA ---
   return (
-    <div className="max-w-3xl mx-auto py-12 px-4">
-      <div className="text-center mb-10">
-        <h1 className="text-3xl font-bold text-gray-800">Layanan Surat Online</h1>
-        <p className="text-gray-500 mt-2">Kelurahan Amban - Cepat, Mudah, Transparan.</p>
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <div className="inline-block p-3 bg-blue-600 rounded-2xl mb-4 shadow-xl shadow-blue-200">
+            <FileText className="text-white w-8 h-8" />
+          </div>
+          <h1 className="text-4xl font-black text-slate-800 tracking-tight">
+            E-Surat Kelurahan
+          </h1>
+          <p className="text-slate-500 mt-2 font-medium">
+            Lengkapi formulir di bawah untuk pengajuan surat online
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-8 bg-white p-6 md:p-10 rounded-3xl shadow-xl shadow-slate-200 border border-slate-100"
+        >
+          {/* SEKSI 1: JENIS LAYANAN */}
+          <section>
+            <label className="flex items-center gap-2 text-sm font-black text-slate-700 uppercase tracking-wider mb-4">
+              <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs">
+                1
+              </span>
+              Pilih Jenis Layanan
+            </label>
+            <select
+              className={`w-full p-4 rounded-xl border-2 transition-all outline-none appearance-none bg-no-repeat bg-[right_1rem_center] ${selectedJenis ? "border-blue-500 bg-blue-50/30" : "border-slate-200 focus:border-blue-500"}`}
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
+                backgroundSize: "1.5rem",
+              }}
+           onChange={(e) => { 
+    setSelectedJenis(e.target.value); // Pastikan ini menangkap ID (Angka)
+    setDataDinamis({}); 
+  }}
+              value={selectedJenis}
+              required
+            >
+              <option value="">-- Pilih Jenis Surat --</option>
+              {jenisSuratList.map((j) => (
+               <option key={j.id} value={j.id}>{j.nama_surat}</option>
+              ))}
+            </select>
+          </section>
+
+          {/* SEKSI 2: IDENTITAS */}
+          <section className="pt-6 border-t border-slate-100">
+            <label className="flex items-center gap-2 text-sm font-black text-slate-700 uppercase tracking-wider mb-4">
+              <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs">
+                2
+              </span>
+              Informasi Pemohon (Sesuai KTP)
+            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <CreditCard size={18} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="NIK (16 Digit)"
+                  className={`input-with-icon ${errors.nik ? "border-red-500 focus:ring-red-200" : "border-slate-200 focus:ring-blue-100"}`}
+                  value={identitas.nik}
+                  onChange={handleNikChange}
+                />
+                <span
+                  className={`text-[10px] absolute right-2 -bottom-5 font-bold ${identitas.nik.length === 16 ? "text-green-500" : "text-slate-400"}`}
+                >
+                  {identitas.nik.length}/16
+                </span>
+              </div>
+
+              <div className="relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <User size={18} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nama Lengkap"
+                  className="input-with-icon border-slate-200 focus:ring-blue-100 uppercase"
+                  value={identitas.nama_lengkap}
+                  onChange={(e) =>
+                    setIdentitas({ ...identitas, nama_lengkap: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="md:col-span-2 relative">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Phone size={18} />
+                </div>
+                <input
+                  type="text"
+                  required
+                  placeholder="Nomor WhatsApp (Aktif)"
+                  className="input-with-icon border-slate-200 focus:ring-blue-100"
+                  value={identitas.no_hp}
+                  onChange={handlePhoneChange}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* SEKSI 3: DINAMIS */}
+          {selectedJenis && (
+            <section className="pt-6 border-t border-slate-100">
+              <label className="flex items-center gap-2 text-sm font-black text-slate-700 uppercase tracking-wider mb-4">
+                <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs">
+                  3
+                </span>
+                Data Tambahan Khusus
+              </label>
+              {renderFormDinamis()}
+            </section>
+          )}
+
+          <button
+            type="submit"
+            disabled={!selectedJenis || loading || identitas.nik.length !== 16}
+            className={`w-full py-5 rounded-2xl font-black text-xl shadow-2xl transition-all transform active:scale-95 flex justify-center items-center gap-3 ${
+              selectedJenis && !loading && identitas.nik.length === 16
+                ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-blue-300"
+                : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+            }`}
+          >
+            {loading ? (
+              <RefreshCw className="animate-spin" />
+            ) : (
+              "KIRIM PENGAJUAN"
+            )}
+          </button>
+        </form>
+
+        <p className="text-center text-slate-400 text-xs mt-8 font-medium">
+          Sistem Informasi Layanan Surat Elektronik v2.0 <br /> Kelurahan Amban,
+          Distrik Manokwari Barat.
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="bg-white shadow-xl rounded-2xl p-6 md:p-8 space-y-6 border border-gray-100">
-        
-        {/* PILIH SURAT */}
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <label className="block text-sm font-bold text-blue-800 mb-2">Pilih Jenis Layanan</label>
-          <select 
-            className="w-full border border-blue-200 p-3 rounded-lg focus:ring-2 focus:ring-blue-500 bg-white"
-            onChange={(e) => {
-              setSelectedJenis(e.target.value);
-              setDataDinamis({}); 
-            }}
-            value={selectedJenis}
-            required
-          >
-            <option value="">-- Klik untuk memilih --</option>
-            {jenisSuratList.map((j) => (
-              <option key={j.id_jenis} value={j.id_jenis}>{j.nama_surat}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* DATA PEMOHON */}
-        <div>
-          <h3 className="text-lg font-bold text-gray-700 border-b pb-2 mb-4">Data Pemohon</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">NIK Pemohon</label>
-              <input 
-                required
-                placeholder="16 Digit Angka"
-                className="input-field" 
-                value={identitas.nik}
-                onChange={(e) => setIdentitas({...identitas, nik: e.target.value})}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-              <input 
-                required
-                placeholder="Sesuai KTP"
-                className="input-field" 
-                value={identitas.nama_lengkap}
-                onChange={(e) => setIdentitas({...identitas, nama_lengkap: e.target.value})}
-              />
-            </div>
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp (Aktif)</label>
-              <input 
-                required
-                type="number"
-                placeholder="Contoh: 08123456789"
-                className="input-field" 
-                value={identitas.no_hp}
-                onChange={(e) => setIdentitas({...identitas, no_hp: e.target.value})}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* FORM DINAMIS */}
-        {renderFormDinamis()}
-
-        <button 
-          type="submit" 
-          disabled={!selectedJenis || loading}
-          className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition transform hover:-translate-y-1 ${
-            selectedJenis && !loading
-            ? "bg-blue-600 text-white hover:bg-blue-700" 
-            : "bg-gray-300 text-gray-500 cursor-not-allowed"
-          }`}
-        >
-          {loading ? "Sedang Mengirim..." : "KIRIM PENGAJUAN SEKARANG"}
-        </button>
-      </form>
-      
       <style jsx>{`
+        .input-with-icon {
+          width: 100%;
+          padding: 1rem 1rem 1rem 3rem;
+          border-width: 2px;
+          border-radius: 0.9rem;
+          outline: none;
+          transition: all 0.2s;
+          font-weight: 500;
+        }
+        .input-with-icon:focus {
+          border-color: #3b82f6;
+          box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+        }
         .input-field {
-            width: 100%;
-            border: 1px solid #e2e8f0;
-            padding: 0.75rem;
-            border-radius: 0.5rem;
-            transition: all 0.2s;
+          width: 100%;
+          border: 2px solid #e2e8f0;
+          padding: 0.8rem;
+          border-radius: 0.75rem;
+          outline: none;
+          transition: all 0.2s;
+          font-size: 0.95rem;
         }
         .input-field:focus {
-            outline: none;
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+          border-color: #3b82f6;
+          background: white;
         }
       `}</style>
     </div>

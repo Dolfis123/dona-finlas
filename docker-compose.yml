@@ -30,7 +30,7 @@ services:
       # KONEKSI DATABASE (Penting: Host pakai nama service 'padarni_db')
       - DB_HOST=padarni_db 
       - DB_USER=root
-      - DB_PASSWORD=K4r37dolfis.
+      - DB_PASS=K4r37dolfis.
       - DB_NAME=db_lurah_padarni
       - DB_DIALECT=mysql
       - JWT_SECRET=12345678

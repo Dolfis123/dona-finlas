@@ -9,28 +9,61 @@ const generateTicket = () => {
 };
 
 // 1. [WARGA] Mengajukan Surat Baru
+// 1. [WARGA] Mengajukan Surat Baru
 exports.ajukanSurat = async (req, res) => {
   try {
-    const { 
+    // Gunakan 'let' agar nilai id_jenis bisa kita timpa jika perlu
+    let { 
       id_jenis, 
       nik, 
       nama_lengkap, 
       no_hp, 
-      data_form_json, // Objek JSON dari frontend (gaji, kampus, dll)
-      data_berkas_json // Objek JSON nama file (sementara string dulu sebelum ada upload file)
+      data_form_json, 
+      data_berkas_json 
     } = req.body;
 
-    // Generate Tiket
+    // 1. Validasi Dasar
+    if (!id_jenis || !nik || !nama_lengkap) {
+      return res.status(400).json({ message: "Data utama (Jenis, NIK, Nama) wajib diisi." });
+    }
+
+    // 2. PROTEKSI FOREIGN KEY: 
+    // Jika id_jenis yang dikirim adalah STRING (Nama Surat), cari ID-nya di database
+    if (isNaN(id_jenis)) {
+      const jenisFound = await JenisSurat.findOne({ 
+        where: { nama_surat: id_jenis } 
+      });
+
+      if (!jenisFound) {
+        return res.status(400).json({ 
+          message: `Jenis surat '${id_jenis}' tidak terdaftar di sistem.` 
+        });
+      }
+      // Timpa nilai id_jenis dengan ID (angka) yang asli dari database
+      id_jenis = jenisFound.id_jenis;
+    }
+
+    // 3. Generate Tiket
     const kode_tiket = generateTicket();
 
+    // 4. Pastikan JSON aman
+    const finalFormJson = typeof data_form_json === 'object' 
+      ? JSON.stringify(data_form_json) 
+      : data_form_json;
+
+    const finalBerkasJson = typeof data_berkas_json === 'object' 
+      ? JSON.stringify(data_berkas_json) 
+      : (data_berkas_json || "{}");
+
+    // 5. Simpan ke Database
     const pengajuan = await PengajuanSementara.create({
       kode_tiket,
-      id_jenis,
+      id_jenis, // Sekarang dijamin berisi Angka (ID)
       nik,
-      nama_lengkap,
+      nama_lengkap: nama_lengkap.toUpperCase(),
       no_hp,
-      data_form_json,
-      data_berkas_json,
+      data_form_json: finalFormJson,
+      data_berkas_json: finalBerkasJson,
       status: "PENDING"
     });
 
@@ -41,7 +74,11 @@ exports.ajukanSurat = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ message: "Gagal mengajukan surat", error: error.message });
+    console.error("CRITICAL ERROR BACKEND:", error);
+    res.status(500).json({ 
+      message: "Gagal mengajukan surat", 
+      error: error.message 
+    });
   }
 };
 
