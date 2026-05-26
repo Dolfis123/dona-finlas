@@ -21,7 +21,7 @@ const JenisSuratAdmin = () => {
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    id: "",
+    id_jenis : "",
     kode_surat: "",
     nama_surat: "",
     status_aktif: "Y",
@@ -62,7 +62,7 @@ const JenisSuratAdmin = () => {
     if (item) {
       setIsEditing(true);
       setFormData({
-        id: item.id,
+        id_jenis: item.id_jenis,
         kode_surat: item.kode_surat,
         nama_surat: item.nama_surat,
         status_aktif: item.status_aktif,
@@ -70,7 +70,7 @@ const JenisSuratAdmin = () => {
     } else {
       setIsEditing(false);
       setFormData({
-        id: "",
+        id_jenis: "",
         kode_surat: "",
         nama_surat: "",
         status_aktif: "Y",
@@ -84,7 +84,7 @@ const JenisSuratAdmin = () => {
     try {
       if (isEditing) {
         await axios.put(
-          `${API_BASE}/jenis/${formData.id}`,
+          `${API_BASE}/jenis/${formData.id_jenis}`,
           formData,
           getHeaders(),
         );
@@ -121,7 +121,7 @@ const JenisSuratAdmin = () => {
       await axios.post(
         `${API_BASE}/syarat`,
         {
-          id_jenis: selectedSurat.id,
+          id_jenis: selectedSurat.id_jenis,
           nama_dokumen: newSyarat.nama_dokumen,
           wajib: newSyarat.wajib,
         },
@@ -130,7 +130,7 @@ const JenisSuratAdmin = () => {
 
       // Refresh data agar list syarat terupdate
       const res = await axios.get(`${API_BASE}/jenis`, getHeaders());
-      const updated = res.data.find((s) => s.id === selectedSurat.id);
+      const updated = res.data.find((s) => s.id_jenis === selectedSurat.id_jenis);
       setSelectedSurat(updated);
       setJenisSuratList(res.data);
       setNewSyarat({ nama_dokumen: "", wajib: "Y" });
@@ -144,7 +144,7 @@ const JenisSuratAdmin = () => {
     try {
       await axios.delete(`${API_BASE}/syarat/${id_syarat}`, getHeaders());
       const res = await axios.get(`${API_BASE}/jenis`, getHeaders());
-      const updated = res.data.find((s) => s.id === selectedSurat.id);
+      const updated = res.data.find((s) => s.id_jenis === selectedSurat.id_jenis);
       setSelectedSurat(updated);
       setJenisSuratList(res.data);
     } catch (error) {
@@ -190,7 +190,7 @@ const JenisSuratAdmin = () => {
                 </tr>
               ) : (
                 jenisSuratList.map((item, index) => (
-                  <tr key={item.id} className="border-b hover:bg-gray-50">
+                  <tr key={item.id_jenis} className="border-b hover:bg-gray-50">
                     <td className="p-4">{index + 1}</td>
                     <td className="p-4 font-mono font-bold text-blue-600">
                       {item.kode_surat}
@@ -201,10 +201,10 @@ const JenisSuratAdmin = () => {
                       <div className="flex flex-wrap gap-1">
                         {item.syarat?.map((s, idx) => (
                           <span
-                            key={s.id || idx}
+                            key={s.id_jenis || idx}
                             className="bg-gray-100 px-2 py-1 rounded text-xs"
                           >
-                            {/* ^--- Gunakan s.id jika ada, jika tidak ada gunakan idx --- */}
+                            {/* ^--- Gunakan s.id_jenis jika ada, jika tidak ada gunakan idx --- */}
                             {s.nama_dokumen} {s.wajib === "Y" && "*"}
                           </span>
                         ))}
@@ -232,7 +232,7 @@ const JenisSuratAdmin = () => {
                           <Edit size={16} />
                         </button>
                         <button
-                          onClick={() => handleDelete(item.id)}
+                          onClick={() => handleDelete(item.id_jenis)}
                           className="p-2 bg-red-100 text-red-600 rounded-full"
                         >
                           <Trash2 size={16} />
@@ -366,7 +366,7 @@ const JenisSuratAdmin = () => {
                 <div className="space-y-2">
                   {selectedSurat.syarat?.map((s) => (
                     <div
-                      key={s.id}
+                      key={s.id_jenis}
                       className="flex justify-between bg-gray-50 p-2 rounded border"
                     >
                       <span>
@@ -376,7 +376,7 @@ const JenisSuratAdmin = () => {
                         )}
                       </span>
                       <button
-                        onClick={() => handleDeleteSyarat(s.id)}
+                        onClick={() => handleDeleteSyarat(s.id_jenis)}
                         className="text-red-500"
                       >
                         <Trash2 size={16} />

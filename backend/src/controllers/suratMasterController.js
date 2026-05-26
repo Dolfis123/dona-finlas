@@ -85,7 +85,7 @@ exports.getAllJenisSurat = async (req, res) => {
         {
           model: SyaratSurat,
           as: "syarat", // Sesuai alias di index.js
-          attributes: ["nama_dokumen", "wajib"],
+          attributes: ["id_syarat", "nama_dokumen", "wajib"],
         },
       ],
     });
@@ -98,8 +98,15 @@ exports.getAllJenisSurat = async (req, res) => {
 // Buat Jenis Surat Baru (Contoh: Surat Kematian)
 exports.createJenisSurat = async (req, res) => {
   try {
-    const { kode_surat, nama_surat } = req.body;
-    const newJenis = await JenisSurat.create({ kode_surat, nama_surat });
+    // Tambahkan status_aktif di destructuring ini
+    const { kode_surat, nama_surat, status_aktif } = req.body; 
+    
+    const newJenis = await JenisSurat.create({ 
+      kode_surat, 
+      nama_surat,
+      status_aktif: status_aktif || 'Y' // Masukkan ke dalam parameter create
+    });
+    
     res.status(201).json({ message: "Jenis surat berhasil dibuat", data: newJenis });
   } catch (error) {
     res.status(500).json({ message: "Gagal membuat jenis surat", error: error.message });
