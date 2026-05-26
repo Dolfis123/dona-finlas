@@ -45,49 +45,68 @@ const PengajuanSurat = () => {
     }
   }, []);
 
-  // Handler Input NIK (Hanya Angka & Max 16)
+  // --- SMART HANDLER UTAMA ---
   const handleNikChange = (e) => {
-    const value = e.target.value.replace(/\D/g, ""); // Hapus non-angka
+    const value = e.target.value.replace(/\D/g, ""); // Hapus non-angka mutlak
     if (value.length <= 16) {
       setIdentitas({ ...identitas, nik: value });
-      if (value.length < 16) {
-        setErrors((prev) => ({ ...prev, nik: "NIK harus 16 digit" }));
+      if (value.length > 0 && value.length < 16) {
+        setErrors((prev) => ({ ...prev, nik: "NIK harus tepat 16 digit angka" }));
       } else {
         setErrors((prev) => ({ ...prev, nik: null }));
       }
     }
   };
 
-  // Handler No HP (Format Indonesia)
   const handlePhoneChange = (e) => {
-    const value = e.target.value.replace(/\D/g, "");
-    if (value.length <= 13) {
+    const value = e.target.value.replace(/\D/g, ""); // Hanya angka
+    if (value.length <= 14) { // Nomor baru bisa sampai 14 digit
       setIdentitas({ ...identitas, no_hp: value });
+      if (value.length > 0 && value.length < 10) {
+        setErrors((prev) => ({ ...prev, no_hp: "Nomor HP tidak valid (minimal 10 digit)" }));
+      } else {
+        setErrors((prev) => ({ ...prev, no_hp: null }));
+      }
     }
   };
 
   const handleDinamisChange = (e) => {
-    const { name, value } = e.target;
+    let { name, value } = e.target;
+
+    // Smart Format berdasarkan nama field
+    if (name.toLowerCase().includes("nik")) {
+      value = value.replace(/\D/g, "").slice(0, 16); // Wajib angka, max 16
+    } else if (name.toLowerCase().includes("nama") || name.toLowerCase().includes("kampus") || name.toLowerCase().includes("prodi")) {
+      value = value.toUpperCase(); // Wajib huruf kapital
+    } else if (name.toLowerCase().includes("umur") || name.toLowerCase().includes("penghasilan")) {
+      value = value.replace(/\D/g, ""); // Wajib angka mutlak (mencegah user mengetik 'Rp' atau titik)
+    }
+
     setDataDinamis((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validasi Akhir sebelum kirim
+    // Validasi Akhir Ekstra
     if (identitas.nik.length !== 16) {
-      alert("NIK harus tepat 16 digit!");
+      alert("Mohon periksa kembali, NIK harus tepat 16 digit!");
+      return;
+    }
+    if (identitas.no_hp.length < 10) {
+      alert("Mohon periksa kembali, Nomor HP tidak valid!");
       return;
     }
 
     setLoading(true);
     try {
+      // Auto-Trim: Membersihkan spasi nyasar di awal/akhir input
       const payload = {
         id_jenis: selectedJenis,
-        nik: identitas.nik,
-        nama_lengkap: identitas.nama_lengkap.toUpperCase(),
-        no_hp: identitas.no_hp,
-        data_form_json: dataDinamis,
+        nik: identitas.nik.trim(),
+        nama_lengkap: identitas.nama_lengkap.trim().toUpperCase(),
+        no_hp: identitas.no_hp.trim(),
+        data_form_json: dataDinamis, // Idealnya ini juga dilooping untuk di-trim jika perlu
         data_berkas_json: {},
       };
 
@@ -117,6 +136,7 @@ const PengajuanSurat = () => {
       setSelectedJenis("");
       setDataDinamis({});
       setIdentitas({ nik: "", nama_lengkap: "", no_hp: "" });
+      setErrors({});
       window.scrollTo(0, 0);
     }
   };
@@ -151,6 +171,7 @@ const PengajuanSurat = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 name="nama_ortu"
+                value={dataDinamis.nama_ortu || ""}
                 placeholder="Nama Lengkap Ortu"
                 className="input-field"
                 onChange={handleDinamisChange}
@@ -158,29 +179,33 @@ const PengajuanSurat = () => {
               />
               <input
                 name="pekerjaan_ortu"
+                value={dataDinamis.pekerjaan_ortu || ""}
                 placeholder="Pekerjaan Ortu"
-                className="input-field"
-                onChange={handleDinamisChange}
+                className="input-field uppercase"
+                onChange={(e) => handleDinamisChange({ target: { name: e.target.name, value: e.target.value.toUpperCase() }})}
                 required
               />
               <input
                 name="penghasilan_ortu"
-                type="number"
-                placeholder="Penghasilan Bulanan (Rp)"
+                type="text" // Diubah dari number agar RegExp berjalan mulus
+                value={dataDinamis.penghasilan_ortu || ""}
+                placeholder="Penghasilan Bulanan (Hanya Angka)"
                 className="input-field"
                 onChange={handleDinamisChange}
                 required
               />
               <input
                 name="umur_ortu"
-                type="number"
-                placeholder="Umur Ortu"
+                type="text" // Diubah dari number
+                value={dataDinamis.umur_ortu || ""}
+                placeholder="Umur Ortu (Tahun)"
                 className="input-field"
                 onChange={handleDinamisChange}
                 required
               />
               <textarea
                 name="alamat_ortu"
+                value={dataDinamis.alamat_ortu || ""}
                 placeholder="Alamat Lengkap Ortu"
                 className="input-field md:col-span-2"
                 rows="2"
@@ -197,6 +222,7 @@ const PengajuanSurat = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 name="kampus"
+                value={dataDinamis.kampus || ""}
                 placeholder="Nama Perguruan Tinggi"
                 className="input-field"
                 onChange={handleDinamisChange}
@@ -204,13 +230,15 @@ const PengajuanSurat = () => {
               />
               <input
                 name="nim"
+                value={dataDinamis.nim || ""}
                 placeholder="NIM / No. Induk Mahasiswa"
-                className="input-field"
-                onChange={handleDinamisChange}
+                className="input-field uppercase"
+                onChange={(e) => handleDinamisChange({ target: { name: e.target.name, value: e.target.value.toUpperCase() }})}
                 required
               />
               <input
                 name="prodi"
+                value={dataDinamis.prodi || ""}
                 placeholder="Program Studi"
                 className="input-field"
                 onChange={handleDinamisChange}
@@ -218,6 +246,7 @@ const PengajuanSurat = () => {
               />
               <input
                 name="keperluan"
+                value={dataDinamis.keperluan || ""}
                 placeholder="Tujuan Penggunaan Surat"
                 className="input-field"
                 onChange={handleDinamisChange}
@@ -244,6 +273,7 @@ const PengajuanSurat = () => {
   if (tiketSukses) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
+        {/* ... (KODE VIEW SUKSES TETAP SAMA SEPERTI SEBELUMNYA) ... */}
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
           <div ref={tiketRef} className="p-8 text-center">
             <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
@@ -336,16 +366,18 @@ const PengajuanSurat = () => {
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='currentColor'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
                 backgroundSize: "1.5rem",
               }}
-           onChange={(e) => { 
-    setSelectedJenis(e.target.value); // Pastikan ini menangkap ID (Angka)
-    setDataDinamis({}); 
-  }}
+              onChange={(e) => {
+                setSelectedJenis(e.target.value);
+                setDataDinamis({});
+              }}
               value={selectedJenis}
               required
             >
               <option value="">-- Pilih Jenis Surat --</option>
               {jenisSuratList.map((j) => (
-               <option key={j.id} value={j.id}>{j.nama_surat}</option>
+                <option key={j.id} value={j.id}>
+                  {j.nama_surat}
+                </option>
               ))}
             </select>
           </section>
@@ -359,6 +391,7 @@ const PengajuanSurat = () => {
               Informasi Pemohon (Sesuai KTP)
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                   <CreditCard size={18} />
@@ -366,16 +399,16 @@ const PengajuanSurat = () => {
                 <input
                   type="text"
                   required
-                  placeholder="NIK (16 Digit)"
+                  placeholder="NIK (16 Digit Angka)"
                   className={`input-with-icon ${errors.nik ? "border-red-500 focus:ring-red-200" : "border-slate-200 focus:ring-blue-100"}`}
                   value={identitas.nik}
                   onChange={handleNikChange}
                 />
-                <span
-                  className={`text-[10px] absolute right-2 -bottom-5 font-bold ${identitas.nik.length === 16 ? "text-green-500" : "text-slate-400"}`}
-                >
+                <span className={`text-[10px] absolute right-4 top-1/2 -translate-y-1/2 font-bold ${identitas.nik.length === 16 ? "text-green-500" : "text-slate-400"}`}>
                   {identitas.nik.length}/16
                 </span>
+                {/* Peringatan Error Visual */}
+                {errors.nik && <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1"><AlertCircle size={12}/> {errors.nik}</p>}
               </div>
 
               <div className="relative">
@@ -386,10 +419,10 @@ const PengajuanSurat = () => {
                   type="text"
                   required
                   placeholder="Nama Lengkap"
-                  className="input-with-icon border-slate-200 focus:ring-blue-100 uppercase"
+                  className="input-with-icon border-slate-200 focus:ring-blue-100"
                   value={identitas.nama_lengkap}
                   onChange={(e) =>
-                    setIdentitas({ ...identitas, nama_lengkap: e.target.value })
+                    setIdentitas({ ...identitas, nama_lengkap: e.target.value.toUpperCase() })
                   }
                 />
               </div>
@@ -402,10 +435,11 @@ const PengajuanSurat = () => {
                   type="text"
                   required
                   placeholder="Nomor WhatsApp (Aktif)"
-                  className="input-with-icon border-slate-200 focus:ring-blue-100"
+                  className={`input-with-icon ${errors.no_hp ? "border-red-500 focus:ring-red-200" : "border-slate-200 focus:ring-blue-100"}`}
                   value={identitas.no_hp}
                   onChange={handlePhoneChange}
                 />
+                {errors.no_hp && <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1"><AlertCircle size={12}/> {errors.no_hp}</p>}
               </div>
             </div>
           </section>
@@ -425,9 +459,9 @@ const PengajuanSurat = () => {
 
           <button
             type="submit"
-            disabled={!selectedJenis || loading || identitas.nik.length !== 16}
+            disabled={!selectedJenis || loading || identitas.nik.length !== 16 || Object.values(errors).some(e => e !== null)}
             className={`w-full py-5 rounded-2xl font-black text-xl shadow-2xl transition-all transform active:scale-95 flex justify-center items-center gap-3 ${
-              selectedJenis && !loading && identitas.nik.length === 16
+              selectedJenis && !loading && identitas.nik.length === 16 && !Object.values(errors).some(e => e !== null)
                 ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-blue-300"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
             }`}
