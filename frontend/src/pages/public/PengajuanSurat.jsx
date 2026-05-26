@@ -154,7 +154,7 @@ const PengajuanSurat = () => {
   };
 
   const renderFormDinamis = () => {
-    const surat = jenisSuratList.find((j) => j.id === parseInt(selectedJenis));
+    const surat = jenisSuratList.find((j) => j.id_jenis === parseInt(selectedJenis));
     if (!surat) return null;
 
     const kodeSurat = (surat.kode_surat || "").toUpperCase();
@@ -375,7 +375,7 @@ const PengajuanSurat = () => {
             >
               <option value="">-- Pilih Jenis Surat --</option>
               {jenisSuratList.map((j) => (
-                <option key={j.id} value={j.id}>
+                <option key={j.id_jenis} value={j.id_jenis}>
                   {j.nama_surat}
                 </option>
               ))}
