@@ -51,7 +51,10 @@ const PengajuanSurat = () => {
     if (value.length <= 16) {
       setIdentitas({ ...identitas, nik: value });
       if (value.length > 0 && value.length < 16) {
-        setErrors((prev) => ({ ...prev, nik: "NIK harus tepat 16 digit angka" }));
+        setErrors((prev) => ({
+          ...prev,
+          nik: "NIK harus tepat 16 digit angka",
+        }));
       } else {
         setErrors((prev) => ({ ...prev, nik: null }));
       }
@@ -60,10 +63,14 @@ const PengajuanSurat = () => {
 
   const handlePhoneChange = (e) => {
     const value = e.target.value.replace(/\D/g, ""); // Hanya angka
-    if (value.length <= 14) { // Nomor baru bisa sampai 14 digit
+    if (value.length <= 14) {
+      // Nomor baru bisa sampai 14 digit
       setIdentitas({ ...identitas, no_hp: value });
       if (value.length > 0 && value.length < 10) {
-        setErrors((prev) => ({ ...prev, no_hp: "Nomor HP tidak valid (minimal 10 digit)" }));
+        setErrors((prev) => ({
+          ...prev,
+          no_hp: "Nomor HP tidak valid (minimal 10 digit)",
+        }));
       } else {
         setErrors((prev) => ({ ...prev, no_hp: null }));
       }
@@ -76,9 +83,16 @@ const PengajuanSurat = () => {
     // Smart Format berdasarkan nama field
     if (name.toLowerCase().includes("nik")) {
       value = value.replace(/\D/g, "").slice(0, 16); // Wajib angka, max 16
-    } else if (name.toLowerCase().includes("nama") || name.toLowerCase().includes("kampus") || name.toLowerCase().includes("prodi")) {
+    } else if (
+      name.toLowerCase().includes("nama") ||
+      name.toLowerCase().includes("kampus") ||
+      name.toLowerCase().includes("prodi")
+    ) {
       value = value.toUpperCase(); // Wajib huruf kapital
-    } else if (name.toLowerCase().includes("umur") || name.toLowerCase().includes("penghasilan")) {
+    } else if (
+      name.toLowerCase().includes("umur") ||
+      name.toLowerCase().includes("penghasilan")
+    ) {
       value = value.replace(/\D/g, ""); // Wajib angka mutlak (mencegah user mengetik 'Rp' atau titik)
     }
 
@@ -154,7 +168,9 @@ const PengajuanSurat = () => {
   };
 
   const renderFormDinamis = () => {
-    const surat = jenisSuratList.find((j) => j.id_jenis === parseInt(selectedJenis));
+    const surat = jenisSuratList.find(
+      (j) => j.id_jenis === parseInt(selectedJenis),
+    );
     if (!surat) return null;
 
     const kodeSurat = (surat.kode_surat || "").toUpperCase();
@@ -164,6 +180,7 @@ const PengajuanSurat = () => {
     if (kodeSurat === "SKTM" || namaSurat.includes("MAMPU")) {
       return (
         <div className="space-y-6 animate-in fade-in duration-500">
+          {/* DATA ORANG TUA / WALI */}
           <div className="p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg">
             <h3 className="flex items-center gap-2 font-bold text-amber-900 mb-4">
               <User size={18} /> Data Orang Tua / Wali
@@ -177,28 +194,59 @@ const PengajuanSurat = () => {
                 onChange={handleDinamisChange}
                 required
               />
+
+              {/* 1. TAMBAHKAN INPUT TTL ORANG TUA */}
               <input
-                name="pekerjaan_ortu"
-                value={dataDinamis.pekerjaan_ortu || ""}
-                placeholder="Pekerjaan Ortu"
-                className="input-field uppercase"
-                onChange={(e) => handleDinamisChange({ target: { name: e.target.name, value: e.target.value.toUpperCase() }})}
+                name="ttl_ortu"
+                value={dataDinamis.ttl_ortu || ""}
+                placeholder="Tempat, Tanggal Lahir Ortu (Contoh: Manokwari, 12 April 1975)"
+                className="input-field"
+                onChange={handleDinamisChange}
                 required
               />
+
+              {/* 2. TAMBAHKAN DROPDOWN JENIS KELAMIN ORANG TUA */}
+              <select
+                name="jk_ortu"
+                value={dataDinamis.jk_ortu || ""}
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              >
+                <option value="">-- Pilih Jenis Kelamin Ortu --</option>
+                <option value="LAKI-LAKI">LAKI-LAKI</option>
+                <option value="PEREMPUAN">PEREMPUAN</option>
+              </select>
+
               <input
-                name="penghasilan_ortu"
-                type="text" // Diubah dari number agar RegExp berjalan mulus
-                value={dataDinamis.penghasilan_ortu || ""}
-                placeholder="Penghasilan Bulanan (Hanya Angka)"
+                name="umur_ortu"
+                type="text"
+                value={dataDinamis.umur_ortu || ""}
+                placeholder="Umur Ortu (Tahun)"
                 className="input-field"
                 onChange={handleDinamisChange}
                 required
               />
               <input
-                name="umur_ortu"
-                type="text" // Diubah dari number
-                value={dataDinamis.umur_ortu || ""}
-                placeholder="Umur Ortu (Tahun)"
+                name="pekerjaan_ortu"
+                value={dataDinamis.pekerjaan_ortu || ""}
+                placeholder="Pekerjaan Ortu"
+                className="input-field uppercase"
+                onChange={(e) =>
+                  handleDinamisChange({
+                    target: {
+                      name: e.target.name,
+                      value: e.target.value.toUpperCase(),
+                    },
+                  })
+                }
+                required
+              />
+              <input
+                name="penghasilan_ortu"
+                type="text"
+                value={dataDinamis.penghasilan_ortu || ""}
+                placeholder="Penghasilan Bulanan (Hanya Angka)"
                 className="input-field"
                 onChange={handleDinamisChange}
                 required
@@ -215,6 +263,7 @@ const PengajuanSurat = () => {
             </div>
           </div>
 
+          {/* DATA PENDIDIKAN / MAHASISWA */}
           <div className="p-4 bg-blue-50 border-l-4 border-blue-400 rounded-r-lg">
             <h3 className="flex items-center gap-2 font-bold text-blue-900 mb-4">
               <FileText size={18} /> Data Pendidikan / Mahasiswa
@@ -233,9 +282,27 @@ const PengajuanSurat = () => {
                 value={dataDinamis.nim || ""}
                 placeholder="NIM / No. Induk Mahasiswa"
                 className="input-field uppercase"
-                onChange={(e) => handleDinamisChange({ target: { name: e.target.name, value: e.target.value.toUpperCase() }})}
+                onChange={(e) =>
+                  handleDinamisChange({
+                    target: {
+                      name: e.target.name,
+                      value: e.target.value.toUpperCase(),
+                    },
+                  })
+                }
                 required
               />
+
+              {/* 3. TAMBAHKAN INPUT FAKULTAS MAHASISWA */}
+              <input
+                name="fakultas"
+                value={dataDinamis.fakultas || ""}
+                placeholder="Fakultas (Contoh: FAKULTAS TEKNIK)"
+                className="input-field"
+                onChange={handleDinamisChange}
+                required
+              />
+
               <input
                 name="prodi"
                 value={dataDinamis.prodi || ""}
@@ -391,7 +458,6 @@ const PengajuanSurat = () => {
               Informasi Pemohon (Sesuai KTP)
             </label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
               <div className="relative">
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                   <CreditCard size={18} />
@@ -404,11 +470,17 @@ const PengajuanSurat = () => {
                   value={identitas.nik}
                   onChange={handleNikChange}
                 />
-                <span className={`text-[10px] absolute right-4 top-1/2 -translate-y-1/2 font-bold ${identitas.nik.length === 16 ? "text-green-500" : "text-slate-400"}`}>
+                <span
+                  className={`text-[10px] absolute right-4 top-1/2 -translate-y-1/2 font-bold ${identitas.nik.length === 16 ? "text-green-500" : "text-slate-400"}`}
+                >
                   {identitas.nik.length}/16
                 </span>
                 {/* Peringatan Error Visual */}
-                {errors.nik && <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1"><AlertCircle size={12}/> {errors.nik}</p>}
+                {errors.nik && (
+                  <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1">
+                    <AlertCircle size={12} /> {errors.nik}
+                  </p>
+                )}
               </div>
 
               <div className="relative">
@@ -422,7 +494,10 @@ const PengajuanSurat = () => {
                   className="input-with-icon border-slate-200 focus:ring-blue-100"
                   value={identitas.nama_lengkap}
                   onChange={(e) =>
-                    setIdentitas({ ...identitas, nama_lengkap: e.target.value.toUpperCase() })
+                    setIdentitas({
+                      ...identitas,
+                      nama_lengkap: e.target.value.toUpperCase(),
+                    })
                   }
                 />
               </div>
@@ -439,7 +514,11 @@ const PengajuanSurat = () => {
                   value={identitas.no_hp}
                   onChange={handlePhoneChange}
                 />
-                {errors.no_hp && <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1"><AlertCircle size={12}/> {errors.no_hp}</p>}
+                {errors.no_hp && (
+                  <p className="text-red-500 text-xs mt-1 px-2 flex items-center gap-1">
+                    <AlertCircle size={12} /> {errors.no_hp}
+                  </p>
+                )}
               </div>
             </div>
           </section>
@@ -459,9 +538,17 @@ const PengajuanSurat = () => {
 
           <button
             type="submit"
-            disabled={!selectedJenis || loading || identitas.nik.length !== 16 || Object.values(errors).some(e => e !== null)}
+            disabled={
+              !selectedJenis ||
+              loading ||
+              identitas.nik.length !== 16 ||
+              Object.values(errors).some((e) => e !== null)
+            }
             className={`w-full py-5 rounded-2xl font-black text-xl shadow-2xl transition-all transform active:scale-95 flex justify-center items-center gap-3 ${
-              selectedJenis && !loading && identitas.nik.length === 16 && !Object.values(errors).some(e => e !== null)
+              selectedJenis &&
+              !loading &&
+              identitas.nik.length === 16 &&
+              !Object.values(errors).some((e) => e !== null)
                 ? "bg-gradient-to-r from-blue-600 to-indigo-700 text-white hover:shadow-blue-300"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
             }`}

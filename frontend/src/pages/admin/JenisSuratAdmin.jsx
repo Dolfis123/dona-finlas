@@ -197,7 +197,7 @@ const JenisSuratAdmin = () => {
                     </td>
                     <td className="p-4 font-medium">{item.nama_surat}</td>
                     <td className="p-4">
-                      // CARI BAGIAN INI:
+                      {/* // CARI BAGIAN INI: */}
                       <div className="flex flex-wrap gap-1">
                         {item.syarat?.map((s, idx) => (
                           <span
@@ -205,7 +205,7 @@ const JenisSuratAdmin = () => {
                             className="bg-gray-100 px-2 py-1 rounded text-xs"
                           >
                             {/* ^--- Gunakan s.id_jenis jika ada, jika tidak ada gunakan idx --- */}
-                            {s.nama_dokumen} {s.wajib === "Y" && "*"}
+                            {s.id_jenis} {s.wajib === "Y" && "*"}
                           </span>
                         ))}
                       </div>
