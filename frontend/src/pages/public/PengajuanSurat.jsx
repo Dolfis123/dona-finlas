@@ -15,7 +15,7 @@ import {
 const PengajuanSurat = () => {
   const [jenisSuratList, setJenisSuratList] = useState([]);
   const [selectedJenis, setSelectedJenis] = useState("");
-
+  const [hasilStatus, setHasilStatus] = useState(null);
   // State Data Diri
   const [identitas, setIdentitas] = useState({
     nik: "",
@@ -32,8 +32,15 @@ const PengajuanSurat = () => {
   const [loading, setLoading] = useState(false);
 
   const tiketRef = useRef();
-
-  useEffect(() => {
+  const jalankanCekStatus = async (kodeTiket) => {
+    try {
+      const res = await api.get(`/surat/status/${kodeTiket}`);
+      setHasilStatus(res.data); // Menyimpan objek { status, keterangan, nama_lengkap, dll }
+    } catch (error) {
+      alert("Tiket tidak ditemukan!");
+    }
+  };
+useEffect(() => {
     api
       .get("/surat/master/jenis")
       .then((res) => setJenisSuratList(res.data))
@@ -42,6 +49,8 @@ const PengajuanSurat = () => {
     const savedTicket = localStorage.getItem("tiket_terakhir");
     if (savedTicket) {
       setTiketSukses(savedTicket);
+      // 👇 TAMBAHKAN BARIS INI: Tarik status terbaru saat halaman di-refresh
+      jalankanCekStatus(savedTicket); 
     }
   }, []);
 
@@ -128,6 +137,7 @@ const PengajuanSurat = () => {
       const tiketBaru = res.data.ticket;
       setTiketSukses(tiketBaru);
       localStorage.setItem("tiket_terakhir", tiketBaru);
+      jalankanCekStatus(tiketBaru);
       window.scrollTo(0, 0);
     } catch (error) {
       alert(
@@ -364,20 +374,38 @@ const PengajuanSurat = () => {
               </p>
             </div>
 
-            <div className="space-y-3 text-left bg-gray-50 p-4 rounded-xl border border-gray-200">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Nama:</span>
-                <span className="font-bold text-gray-800">
-                  {identitas.nama_lengkap.toUpperCase()}
-                </span>
+            {hasilStatus && (
+              <div className="bg-white p-6 rounded-2xl shadow border mt-4">
+                <p className="text-sm text-gray-500">
+                  Nama Pemohon: <b>{hasilStatus.nama_lengkap}</b>
+                </p>
+                <p className="text-sm text-gray-500">
+                  Jenis Surat: <b>{hasilStatus.jenis_surat}</b>
+                </p>
+
+                <div className="flex justify-between items-center my-4 p-3 bg-slate-50 rounded-xl">
+                  <span className="text-gray-600 text-sm font-medium">
+                    Status Pengajuan:
+                  </span>
+
+                  {/* KUNCI DINAMIS DI SINI 👇 */}
+                  <span
+                    className={`px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase ${
+                      hasilStatus.status.includes("SELESAI")
+                        ? "bg-green-100 text-green-700"
+                        : "bg-orange-100 text-orange-700 animate-pulse"
+                    }`}
+                  >
+                    {hasilStatus.status}
+                  </span>
+                </div>
+
+                {/* Keterangan dinamis dari server (sangat informatif untuk warga) */}
+                <p className="text-xs text-gray-500 border-t pt-2 italic">
+                  {hasilStatus.keterangan}
+                </p>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-500">Status:</span>
-                <span className="font-bold text-orange-500 italic underline">
-                  MENUNGGU VALIDASI
-                </span>
-              </div>
-            </div>
+            )}
           </div>
 
           <div className="p-6 bg-gray-100 flex flex-col gap-3">

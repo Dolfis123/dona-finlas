@@ -83,23 +83,53 @@ exports.ajukanSurat = async (req, res) => {
 };
 
 // 2. [WARGA] Cek Status Surat (Berdasarkan Kode Tiket)
+// 2. [WARGA] Cek Status Surat (Berdasarkan Kode Tiket) - VERSI PINTAR
 exports.cekStatusSurat = async (req, res) => {
   try {
-    const { kode_tiket } = req.params; // Ambil dari URL
+    const { kode_tiket } = req.params;
 
-    const data = await PengajuanSementara.findOne({
+    // LANGKAH 1: Coba cari di antrean sementara terlebih dahulu
+    const dataSementara = await PengajuanSementara.findOne({
       where: { kode_tiket },
       include: [
         { model: JenisSurat, as: "detail_jenis", attributes: ["nama_surat"] }
       ]
     });
 
-    if (!data) {
-      return res.status(404).json({ message: "Kode tiket tidak ditemukan." });
+    // Jika ketemu di antrean sementara, berarti statusnya masih PENDING atau VALIDASI
+    if (dataSementara) {
+      return res.status(200).json({
+        kode_tiket: dataSementara.kode_tiket,
+        nama_lengkap: dataSementara.nama_lengkap,
+        jenis_surat: dataSementara.detail_jenis ? dataSementara.detail_jenis.nama_surat : "Surat",
+        status: "MENUNGGU VALIDASI",
+        keterangan: "Surat Anda sedang dalam antrean pemeriksaan oleh petugas kelurahan."
+      });
     }
 
-    res.status(200).json(data);
+    // LANGKAH 2: Jika tidak ada di sementara, cek apakah sudah masuk ke tabel ArsipSurat?
+    const dataArsip = await ArsipSurat.findOne({
+      where: { kode_tiket_asal: kode_tiket }
+    });
+
+    // Jika ketemu di tabel arsip, artinya surat SUDAH DISETUJUI & SELESAI
+    if (dataArsip) {
+      return res.status(200).json({
+        kode_tiket: dataArsip.kode_tiket_asal,
+        nama_lengkap: dataArsip.nama_lengkap,
+        jenis_surat: dataArsip.jenis_surat_snapshot,
+        status: "SELESAI / DISETUJUI",
+        no_surat: dataArsip.no_surat_manual,
+        tgl_selesai: dataArsip.tgl_surat,
+        keterangan: `Surat Anda telah diterbitkan dengan Nomor: ${dataArsip.no_surat_manual}. Silakan ambil berkas fisik di kantor kelurahan.`
+      });
+    }
+
+    // LANGKAH 3: Jika di kedua tabel tidak ditemukan, baru kirim status 404
+    return res.status(404).json({ message: "Kode tiket tidak terdaftar atau salah ketik." });
+
   } catch (error) {
+    console.error("Error Cek Status:", error);
     res.status(500).json({ message: "Terjadi kesalahan server", error: error.message });
   }
 };
