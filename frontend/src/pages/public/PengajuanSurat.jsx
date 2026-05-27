@@ -165,18 +165,21 @@ useEffect(() => {
     }
   };
 
-  const handleDownloadTiket = () => {
+const handleDownloadTiket = () => {
     const element = tiketRef.current;
     const opt = {
-      margin: 10,
-      filename: `TIKET_${tiketSukses}.pdf`,
+      margin: [5, 5, 5, 5], // Margin seimbang
+      filename: `Bukti_Pengajuan_${tiketSukses}.pdf`,
       image: { type: "jpeg", quality: 1 },
-      html2canvas: { scale: 2, useCORS: true },
+      html2canvas: { 
+        scale: 3, // Skala diperbesar agar PDF sangat tajam/HD
+        useCORS: true, 
+        backgroundColor: "#ffffff" // Paksa background putih bersih
+      },
       jsPDF: { unit: "mm", format: "a6", orientation: "portrait" },
     };
     html2pdf().set(opt).from(element).save();
-  };
-
+  };  
   const renderFormDinamis = () => {
     const surat = jenisSuratList.find(
       (j) => j.id_jenis === parseInt(selectedJenis),
@@ -352,61 +355,66 @@ useEffect(() => {
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
         {/* ... (KODE VIEW SUKSES TETAP SAMA SEPERTI SEBELUMNYA) ... */}
         <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-          <div ref={tiketRef} className="p-8 text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-6">
-              <CheckCircle className="text-green-600 w-12 h-12" />
-            </div>
-            <h2 className="text-2xl font-black text-gray-800 tracking-tight">
-              PENGAJUAN BERHASIL
-            </h2>
-            <p className="text-gray-400 text-sm mt-1">
-              Kelurahan Amban - Papua Barat
-            </p>
-
-            <div className="my-8 py-6 px-4 bg-slate-900 rounded-2xl text-white relative">
-              <div className="absolute -left-2 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-r-full"></div>
-              <div className="absolute -right-2 top-1/2 -translate-y-1/2 w-4 h-8 bg-gray-50 rounded-l-full"></div>
-              <p className="text-xs text-slate-400 uppercase tracking-widest mb-1">
-                Kode Tiket Anda
-              </p>
-              <p className="text-4xl font-mono font-black text-blue-400">
-                {tiketSukses}
-              </p>
+         {/* --- TIKET ELEGAN START --- */}
+          <div 
+            ref={tiketRef} 
+            className="p-8 w-full max-w-md bg-white relative"
+          >
+            {/* Header Tiket */}
+            <div className="text-center border-b-2 border-dashed border-gray-300 pb-6 mb-6">
+              <div className="inline-block p-2 bg-blue-600 rounded-lg mb-3">
+                <FileText className="text-white w-6 h-6" />
+              </div>
+              <h2 className="text-2xl font-black text-gray-900 tracking-widest uppercase">E-TICKET</h2>
+              <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">Kelurahan Amban - Papua Barat</p>
             </div>
 
+            {/* Nomor Tiket */}
+            <div className="text-center mb-8">
+              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-bold">Kode Pengajuan Anda</p>
+              <div className="bg-slate-50 py-4 px-2 rounded-xl border-2 border-slate-200">
+                <p className="text-3xl font-mono font-black text-blue-600 tracking-wider">
+                  {tiketSukses}
+                </p>
+              </div>
+            </div>
+
+            {/* Detail Pemohon */}
             {hasilStatus && (
-              <div className="bg-white p-6 rounded-2xl shadow border mt-4">
-                <p className="text-sm text-gray-500">
-                  Nama Pemohon: <b>{hasilStatus.nama_lengkap}</b>
-                </p>
-                <p className="text-sm text-gray-500">
-                  Jenis Surat: <b>{hasilStatus.jenis_surat}</b>
-                </p>
-
-                <div className="flex justify-between items-center my-4 p-3 bg-slate-50 rounded-xl">
-                  <span className="text-gray-600 text-sm font-medium">
-                    Status Pengajuan:
-                  </span>
-
-                  {/* KUNCI DINAMIS DI SINI 👇 */}
-                  <span
-                    className={`px-3 py-1 rounded-full text-xs font-black tracking-wide uppercase ${
-                      hasilStatus.status.includes("SELESAI")
-                        ? "bg-green-100 text-green-700"
-                        : "bg-orange-100 text-orange-700 animate-pulse"
-                    }`}
-                  >
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-xs text-gray-400 uppercase font-bold">Pemohon</span>
+                  <span className="text-sm font-bold text-gray-800">{hasilStatus.nama_lengkap}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-xs text-gray-400 uppercase font-bold">Layanan</span>
+                  <span className="text-sm font-bold text-gray-800 text-right">{hasilStatus.jenis_surat}</span>
+                </div>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-xs text-gray-400 uppercase font-bold">Status</span>
+                  <span className={`text-sm font-black uppercase ${hasilStatus.status.includes("SELESAI") ? "text-green-600" : "text-orange-500"}`}>
                     {hasilStatus.status}
                   </span>
                 </div>
-
-                {/* Keterangan dinamis dari server (sangat informatif untuk warga) */}
-                <p className="text-xs text-gray-500 border-t pt-2 italic">
-                  {hasilStatus.keterangan}
-                </p>
+                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
+                  <span className="text-xs text-gray-400 uppercase font-bold">Tanggal</span>
+                  <span className="text-sm font-bold text-gray-800">{new Date().toLocaleDateString('id-ID')}</span>
+                </div>
               </div>
             )}
+
+            {/* Footer / Info Tambahan */}
+            <div className="text-center mt-6 pt-6 border-t-2 border-dashed border-gray-300">
+              <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
+                Harap simpan tiket ini atau tunjukkan file PDF ini kepada petugas saat Anda mengambil surat fisik di Kantor Kelurahan.
+              </p>
+            </div>
+
+            {/* Efek Lingkaran Sobekan Kertas Kiri Kanan (Opsional) */}
+            <div className="absolute -left-4 top-[140px] w-8 h-8 bg-gray-50 rounded-full border-r border-gray-200"></div>
+            <div className="absolute -right-4 top-[140px] w-8 h-8 bg-gray-50 rounded-full border-l border-gray-200"></div>
           </div>
+          {/* --- TIKET ELEGAN END --- */}
 
           <div className="p-6 bg-gray-100 flex flex-col gap-3">
             <button
