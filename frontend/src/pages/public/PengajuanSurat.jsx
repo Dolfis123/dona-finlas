@@ -168,18 +168,19 @@ useEffect(() => {
 const handleDownloadTiket = () => {
     const element = tiketRef.current;
     const opt = {
-      margin: [5, 5, 5, 5], // Margin seimbang
-      filename: `Bukti_Pengajuan_${tiketSukses}.pdf`,
-      image: { type: "jpeg", quality: 1 },
+      margin: 5, // Margin tipis agar elegan
+      filename: `E-Ticket_${tiketSukses}.pdf`,
+      image: { type: "png", quality: 1 }, // Gunakan PNG agar teks lebih tajam dari JPEG
       html2canvas: { 
-        scale: 3, // Skala diperbesar agar PDF sangat tajam/HD
+        scale: 3, // Skala diperbesar (Kualitas HD)
         useCORS: true, 
-        backgroundColor: "#ffffff" // Paksa background putih bersih
+        backgroundColor: "#ffffff",
+        windowWidth: 500 // Kunci ukuran rendering agar tidak melar di layar besar
       },
-      jsPDF: { unit: "mm", format: "a6", orientation: "portrait" },
+      jsPDF: { unit: "mm", format: "a5", orientation: "portrait" }, // Kertas A5 anti-terpotong
     };
     html2pdf().set(opt).from(element).save();
-  };  
+  };
   const renderFormDinamis = () => {
     const surat = jenisSuratList.find(
       (j) => j.id_jenis === parseInt(selectedJenis),
@@ -350,87 +351,91 @@ const handleDownloadTiket = () => {
   };
 
   // --- VIEW: SUKSES ---
+// --- VIEW: SUKSES ---
   if (tiketSukses) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4">
-        {/* ... (KODE VIEW SUKSES TETAP SAMA SEPERTI SEBELUMNYA) ... */}
-        <div className="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100">
-         {/* --- TIKET ELEGAN START --- */}
-          <div 
-            ref={tiketRef} 
-            className="p-8 w-full max-w-md bg-white relative"
-          >
-            {/* Header Tiket */}
-            <div className="text-center border-b-2 border-dashed border-gray-300 pb-6 mb-6">
-              <div className="inline-block p-2 bg-blue-600 rounded-lg mb-3">
-                <FileText className="text-white w-6 h-6" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-widest uppercase">E-TICKET</h2>
-              <p className="text-gray-500 text-xs uppercase tracking-widest mt-1">Kelurahan Amban - Papua Barat</p>
-            </div>
+        
+        {/* --- TIKET ELEGAN START --- */}
+        <div 
+          ref={tiketRef} 
+          // Lebar dikunci di 360px agar PDF membacanya dengan sangat presisi
+          className="w-[360px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col my-6"
+        >
+          {/* Bagian Atas - Header Gelap */}
+          <div className="bg-slate-900 text-white text-center py-6 px-4">
+            <h2 className="text-2xl font-black tracking-widest uppercase mb-1">E-TICKET</h2>
+            <p className="text-[10px] text-slate-400 uppercase tracking-widest">Kelurahan Amban - Papua Barat</p>
+          </div>
 
-            {/* Nomor Tiket */}
-            <div className="text-center mb-8">
-              <p className="text-xs text-gray-400 uppercase tracking-widest mb-2 font-bold">Kode Pengajuan Anda</p>
-              <div className="bg-slate-50 py-4 px-2 rounded-xl border-2 border-slate-200">
-                <p className="text-3xl font-mono font-black text-blue-600 tracking-wider">
-                  {tiketSukses}
-                </p>
-              </div>
-            </div>
-
-            {/* Detail Pemohon */}
-            {hasilStatus && (
-              <div className="space-y-4 mb-8">
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs text-gray-400 uppercase font-bold">Pemohon</span>
-                  <span className="text-sm font-bold text-gray-800">{hasilStatus.nama_lengkap}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs text-gray-400 uppercase font-bold">Layanan</span>
-                  <span className="text-sm font-bold text-gray-800 text-right">{hasilStatus.jenis_surat}</span>
-                </div>
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs text-gray-400 uppercase font-bold">Status</span>
-                  <span className={`text-sm font-black uppercase ${hasilStatus.status.includes("SELESAI") ? "text-green-600" : "text-orange-500"}`}>
-                    {hasilStatus.status}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-gray-100 pb-2">
-                  <span className="text-xs text-gray-400 uppercase font-bold">Tanggal</span>
-                  <span className="text-sm font-bold text-gray-800">{new Date().toLocaleDateString('id-ID')}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Footer / Info Tambahan */}
-            <div className="text-center mt-6 pt-6 border-t-2 border-dashed border-gray-300">
-              <p className="text-[10px] text-gray-400 leading-relaxed font-medium">
-                Harap simpan tiket ini atau tunjukkan file PDF ini kepada petugas saat Anda mengambil surat fisik di Kantor Kelurahan.
+          {/* Bagian Tengah - Info Utama */}
+          <div className="pt-6 pb-4 px-6 bg-white relative">
+            <div className="text-center mb-6">
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1 font-bold">Kode Pengajuan</p>
+              <p className="text-3xl font-mono font-black text-blue-600 tracking-wider">
+                {tiketSukses}
               </p>
             </div>
 
-            {/* Efek Lingkaran Sobekan Kertas Kiri Kanan (Opsional) */}
-            <div className="absolute -left-4 top-[140px] w-8 h-8 bg-gray-50 rounded-full border-r border-gray-200"></div>
-            <div className="absolute -right-4 top-[140px] w-8 h-8 bg-gray-50 rounded-full border-l border-gray-200"></div>
-          </div>
-          {/* --- TIKET ELEGAN END --- */}
+            {hasilStatus && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4">
+                  <div>
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Pemohon</p>
+                    <p className="text-sm font-bold text-gray-800 leading-tight mt-1">{hasilStatus.nama_lengkap}</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] text-gray-400 uppercase font-bold">Tanggal</p>
+                    <p className="text-sm font-bold text-gray-800 leading-tight mt-1">{new Date().toLocaleDateString('id-ID')}</p>
+                  </div>
+                </div>
 
-          <div className="p-6 bg-gray-100 flex flex-col gap-3">
-            <button
-              onClick={handleDownloadTiket}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-200"
-            >
-              <Download size={20} /> Simpan Bukti PDF
-            </button>
-            <button
-              onClick={handleReset}
-              className="w-full flex items-center justify-center gap-2 py-3 text-gray-500 font-medium hover:text-gray-800 transition"
-            >
-              <RefreshCw size={18} /> Buat Pengajuan Lain
-            </button>
+                <div className="border-t border-slate-100 pt-4">
+                  <p className="text-[10px] text-gray-400 uppercase font-bold">Layanan Surat</p>
+                  <p className="text-sm font-bold text-gray-800 leading-tight mt-1">{hasilStatus.jenis_surat}</p>
+                </div>
+
+                <div className="border-t border-slate-100 pt-4 pb-2">
+                  <div className="bg-slate-50 rounded-lg p-3 flex justify-between items-center border border-slate-200">
+                    <span className="text-[10px] text-gray-500 uppercase font-bold">Status Saat Ini</span>
+                    <span className={`text-xs font-black uppercase ${hasilStatus.status.includes("SELESAI") ? "text-green-600" : "text-orange-500"}`}>
+                      {hasilStatus.status}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Bagian Bawah - Efek Garis Sobek (Tear-off) & Footer */}
+          <div className="relative bg-slate-50 py-5 px-6 border-t-2 border-dashed border-gray-300">
+             {/* Lubang sobekan di Kiri dan Kanan */}
+             <div className="absolute -top-3 -left-3 w-6 h-6 bg-white rounded-full border-r-2 border-dashed border-gray-300"></div>
+             <div className="absolute -top-3 -right-3 w-6 h-6 bg-white rounded-full border-l-2 border-dashed border-gray-300"></div>
+
+             <p className="text-[10px] text-gray-500 leading-relaxed font-medium text-center">
+               Harap tunjukkan E-Ticket ini beserta berkas asli pendukung kepada petugas loket saat mengambil surat fisik.
+             </p>
           </div>
         </div>
+        {/* --- TIKET ELEGAN END --- */}
+
+        {/* Tombol Aksi (TIDAK MASUK KE DALAM PDF KARENA DI LUAR tiketRef) */}
+        <div className="w-[360px] flex flex-col gap-3">
+          <button
+            onClick={handleDownloadTiket}
+            className="w-full flex items-center justify-center gap-2 py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition active:scale-95 shadow-lg shadow-blue-200"
+          >
+            <Download size={20} /> Simpan Bukti PDF
+          </button>
+          <button
+            onClick={handleReset}
+            className="w-full flex items-center justify-center gap-2 py-3 text-gray-500 font-medium hover:text-gray-800 transition"
+          >
+            <RefreshCw size={18} /> Buat Pengajuan Lain
+          </button>
+        </div>
+
       </div>
     );
   }
