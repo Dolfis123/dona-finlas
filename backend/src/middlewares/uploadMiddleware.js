@@ -1,10 +1,19 @@
 const multer = require("multer");
 const path = require("path");
+const fs = require("fs"); // <-- 1. WAJIB TAMBAHKAN INI
 
-// --- Konfigurasi Penyimpanan (Tidak Berubah) ---
-const storage = (folder) =>
-    multer.diskStorage({
-        destination: (req, file, cb) => cb(null, `public/${folder}`),
+// --- Konfigurasi Penyimpanan (DIPERBAIKI) ---
+const storage = (folder) => {
+    // Tentukan lokasi folder
+    const dir = `public/${folder}`;
+
+    // 2. CEK & BUAT FOLDER OTOMATIS JIKA BELUM ADA
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+
+    return multer.diskStorage({
+        destination: (req, file, cb) => cb(null, dir),
         filename: (req, file, cb) => {
             const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
             cb(
@@ -13,8 +22,9 @@ const storage = (folder) =>
             );
         },
     });
+};
 
-// --- Filter File (Tidak Berubah) ---
+// --- Filter File (Tetap Sama) ---
 const imageFileFilter = (req, file, cb) => {
     if (file.mimetype.startsWith("image/")) {
         cb(null, true);
@@ -22,6 +32,7 @@ const imageFileFilter = (req, file, cb) => {
         cb(new Error("Hanya file gambar yang diizinkan!"), false);
     }
 };
+
 const documentFileFilter = (req, file, cb) => {
     if (file.mimetype === "application/pdf" || file.mimetype.includes("word")) {
         cb(null, true);
@@ -30,13 +41,12 @@ const documentFileFilter = (req, file, cb) => {
     }
 };
 
-// --- FUNGSI BARU UNTUK MENANGANI ERROR ---
+// --- Fungsi Handler Error (Tetap Sama) ---
 const createUpload = (config) => (req, res, next) => {
     const upload = multer(config).single(config.fieldName);
 
     upload(req, res, (err) => {
         if (err instanceof multer.MulterError) {
-            // Menangkap error spesifik dari Multer
             if (err.code === "LIMIT_FILE_SIZE") {
                 const limitInMB = config.limits.fileSize / 1024 / 1024;
                 return res.status(400).json({
@@ -45,15 +55,13 @@ const createUpload = (config) => (req, res, next) => {
             }
             return res.status(400).json({ message: err.message });
         } else if (err) {
-            // Menangkap error lain (misal dari file filter)
             return res.status(400).json({ message: err.message });
         }
-        // Jika tidak ada error, lanjutkan
         next();
     });
 };
 
-// --- EKSPOR BARU MENGGUNAKAN FUNGSI HANDLER ---
+// --- Ekspor Middleware (Tetap Sama) ---
 const uploadImage = createUpload({
     storage: storage("images"),
     fileFilter: imageFileFilter,
